@@ -13,44 +13,13 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-private slots:
-    // Input Row //
-    void onInFileClicked();
-    void onInFolderClicked();
-
-    void inFileLineFocusLost();
-    void inFolderLineFocusLost();
-
-    // Replace //
-    void oldWordLineFocusLost();
-    void newWordLineFocusLost();
-
-    // Option Row //
-    void onCaseSensitiveClicked();
-
-    // Setting Row //
-    void onReplaceFileClicked();
-    void onAddSuffixClicked();
-
-    // Output Row //
-    void onOpenOutputFolderClicked();
-    void onCreateBackupClicked();
-    void onReplaceOriginalClicked();
-    void onSelectOutputFolderClicked();
-
-    void outPathLineFocusLost();
-
-    // Bottom Row //
-    void onStartButtonClicked();
-    void onPreviewButtonClicked();
-
-private:
-    Ui::MainWindow *ui;
-
+public:
     const QString extensionFilters{"*.txt *.csv *.log *.ini *.md *.xml *.json *.yaml *.yml *.tsv *.bat *.sh *.plist *.html *.htm"};
 
     QString filePath;
     QString folderPath;
+
+    QString outPath;
 
     bool isFile;
 
@@ -66,6 +35,45 @@ private:
 
     bool isReplacingOriginalFile;
     bool isCreatingBackup;
+
+private slots:
+    // Input Row //
+    void onInFileClicked();
+    void onInFolderClicked();
+
+    void inFileLineFocusLost();
+    void inFolderLineFocusLost();
+
+    // Replace //
+    void oldWordLineFocusLost();
+    void newWordLineFocusLost();
+
+    void checkReplacementAndUpdateIfValid();
+
+    // Option Row //
+    void onCaseSensitiveClicked();
+
+    void separatorLineFocusLost();
+
+    // Setting Row //
+    void onReplaceFileClicked();
+    void onAddSuffixClicked();
+
+    // Output Row //
+    void onOpenOutputFolderClicked();
+    void onCreateBackupClicked();
+    void onReplaceOriginalClicked();
+    void onSelectOutputFolderClicked();
+
+    void outPathLineFocusLost();
+    void suffixLineFocusLost();
+
+    // Bottom Row //
+    void onStartButtonClicked();
+    void onPreviewButtonClicked();
+
+private:
+    Ui::MainWindow *ui;
 
 private:
     void initTipsAndWarnings();

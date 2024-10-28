@@ -23,9 +23,14 @@ class CustomPlainTextEdit : public QPlainTextEdit{
 public:
     explicit CustomPlainTextEdit(QWidget *parent = nullptr);
 
+    QString text() const;
+
 signals:
     void focusLost();
 
 protected:
     void focusOutEvent(QFocusEvent *event) override;
+
+private:
+    void keyPressEvent(QKeyEvent *event);
 };

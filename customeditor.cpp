@@ -13,3 +13,15 @@ void CustomPlainTextEdit::focusOutEvent(QFocusEvent *event){
     QPlainTextEdit::focusOutEvent(event);
     emit focusLost();
 }
+
+QString CustomPlainTextEdit::text() const {
+    return toPlainText();
+}
+
+void CustomPlainTextEdit::keyPressEvent(QKeyEvent *event){
+    if(event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter){
+        event->ignore();
+    }else{
+        QPlainTextEdit::keyPressEvent(event);
+    }
+}
