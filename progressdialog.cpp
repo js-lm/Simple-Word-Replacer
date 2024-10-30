@@ -8,7 +8,6 @@ ProgressDialog::ProgressDialog(QWidget *parent)
     ui->setupUi(this);
 }
 
-ProgressDialog::~ProgressDialog()
-{
+ProgressDialog::~ProgressDialog(){
     delete ui;
 }

@@ -331,6 +331,8 @@ void MainWindow::onAddSuffixClicked(){
     qDebug() << "onAddSuffixClicked() called";
     isAddingSuffix = ui->isAddingSuffix->isChecked();
     qDebug() << "updated isAddingSuffix to " << isAddingSuffix;
+
+    ui->suffixLine->setEnabled(isAddingSuffix);
 }
 
 // Output Row //
@@ -353,13 +355,25 @@ void MainWindow::onCreateBackupClicked(){
 void MainWindow::onReplaceOriginalClicked(){
     qDebug() << "onReplaceOriginalClicked() called";
 
+    auto buttonEnabled = [this](bool enabled){
+        ui->isAddingSuffix->setEnabled(enabled);
+        ui->suffixLine->setEnabled(enabled);
+        ui->isReplacingFileName->setEnabled(enabled);
+        ui->outPathButton->setEnabled(enabled);
+        ui->outPathLine->setEnabled(enabled);
+        ui->openOutFolderButton->setEnabled(enabled);
+
+        ui->outFolderWarning->clear();
+    };
+
     if(isReplacingOriginalFile){
-
-
+        buttonEnabled(true);
+        updateOutPath(false);
+        ui->suffixLine->setEnabled(isAddingSuffix);
     }else{
         QMessageBox::StandardButton reply{
-            QMessageBox::question(this, "Confirm Replace?",
-                                  "Do you really want to replace the original files? This action cannot be reverse.",
+            QMessageBox::question(this, "Confirm File Replacement",
+                                  "Do you really want to replace the original files?\n\nThis action cannot be undone.\n",
                                   QMessageBox::Yes | QMessageBox::No
                                   )
         };
@@ -367,18 +381,14 @@ void MainWindow::onReplaceOriginalClicked(){
         if(reply == QMessageBox::No){
             ui->isReplacingOriginal->setChecked(false);
             return;
+        }else{
+            ui->isCreatingBackup->setChecked(true);
+            isCreatingBackup = true;
+            qDebug() << "updated isCreatingBackup to " << isCreatingBackup;
+
+            buttonEnabled(false);
         }
     }
-    /*
-    isAddingSuffix
-    suffixLine
-
-    isReplacingFileName
-
-    outPathButton
-    outPathLine
-    openOutFolderButton
-    */
 
     isReplacingOriginalFile = ui->isReplacingOriginal->isChecked();
     qDebug() << "updated isReplacingOriginalFile to " << isReplacingOriginalFile;
@@ -404,19 +414,23 @@ void MainWindow::onSelectOutputFolderClicked(){
 
 void MainWindow::outPathLineFocusLost(){
     qDebug() << "outPathLine out of focus";
-    updateOutPath();
+    updateOutPath(true);
 }
 
-void MainWindow::updateOutPath(){
+void MainWindow::updateOutPath(bool isShowingWarning){
     qDebug() << "updateOutPath() called";
     QString path{ui->outPathLine->text()};
 
     if(path.isEmpty()){
-        ui->outFolderWarning->setText("⚠ No Folder Entered");
+        if(isShowingWarning){
+            ui->outFolderWarning->setText("⚠ No Folder Entered");
+        }
         ui->openOutFolderButton->setEnabled(false);
         return;
     }else if(!QDir(path).exists()){
-        ui->outFolderWarning->setText("⚠ Folder Does Not Exist");
+        if(isShowingWarning){
+            ui->outFolderWarning->setText("⚠ Folder Does Not Exist");
+        }
         ui->openOutFolderButton->setEnabled(false);
         return;
     }
@@ -434,15 +448,20 @@ void MainWindow::suffixLineFocusLost(){
 // Bottom Row //
 void MainWindow::onStartButtonClicked(){
     qDebug() << "onStartButtonClicked() called";
-    checkStartConditions();
+    checkStartConditions(false);
+
+    //ReplaceWord replacer(this);
+    //replacer.start();
 }
 
 void MainWindow::onPreviewButtonClicked(){
     qDebug() << "onPreviewButtonClicked() called";
-    checkStartConditions();
+    checkStartConditions(true);
+
+    // preview();
 }
 
-void MainWindow::checkStartConditions(){
+bool MainWindow::checkStartConditions(bool isPreviewing){
     qDebug() << "updateStartButtonStatus() called";
     qDebug() << "filePath: " << filePath;
     qDebug() << "folderPath: " << folderPath;
@@ -461,16 +480,16 @@ void MainWindow::checkStartConditions(){
     isFile ? updateInFileLine() : updateInFolderLine();
     removeDuplicatedSeparatorFromSearchFor();
     checkReplacementAndUpdateIfValid();
-    updateOutPath();
+    updateOutPath(true);
 
     if(
         (isFile && filePath.isEmpty()) ||
         (!isFile && folderPath.isEmpty()) ||
-        (!isReplacingOriginalFile && outPath.isEmpty()) ||
+        (!isReplacingOriginalFile && !isPreviewing && outPath.isEmpty()) ||
         oldWord.isEmpty()
         ){
-        return;
+        return false;
     }
 
-    //start();
+    return true;
 }

@@ -8,7 +8,6 @@ PreviewDialog::PreviewDialog(QWidget *parent)
     ui->setupUi(this);
 }
 
-PreviewDialog::~PreviewDialog()
-{
+PreviewDialog::~PreviewDialog(){
     delete ui;
 }

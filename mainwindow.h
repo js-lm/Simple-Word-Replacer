@@ -83,10 +83,10 @@ private:
     void removeDuplicatedSeparatorFromSearchFor();
     void checkReplacementAndUpdateIfValid();
 
-    void checkStartConditions();
+    bool checkStartConditions(bool isPreviewing);
 
     void updateInFileLine();
     void updateInFolderLine();
 
-    void updateOutPath();
+    void updateOutPath(bool isShowingWarning);
 };
