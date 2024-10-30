@@ -25,3 +25,7 @@ void CustomPlainTextEdit::keyPressEvent(QKeyEvent *event){
         QPlainTextEdit::keyPressEvent(event);
     }
 }
+
+void CustomPlainTextEdit::setText(const QString &text){
+    setPlainText(text);
+}

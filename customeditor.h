@@ -24,6 +24,7 @@ public:
     explicit CustomPlainTextEdit(QWidget *parent = nullptr);
 
     QString text() const;
+    void setText(const QString &text);
 
 signals:
     void focusLost();
@@ -32,5 +33,5 @@ protected:
     void focusOutEvent(QFocusEvent *event) override;
 
 private:
-    void keyPressEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent *event) override;
 };

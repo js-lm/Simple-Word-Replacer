@@ -27,7 +27,7 @@ public:
     QStringList newWord;
 
     bool isCaseSensitive;
-    char separator;
+    QString separator;
 
     bool isReplacingFileName;
     bool isAddingSuffix;
@@ -37,6 +37,8 @@ public:
     bool isCreatingBackup;
 
 private slots:
+    void onInMethodChanged();
+
     // Input Row //
     void onInFileClicked();
     void onInFolderClicked();
@@ -47,8 +49,6 @@ private slots:
     // Replace //
     void oldWordLineFocusLost();
     void newWordLineFocusLost();
-
-    void checkReplacementAndUpdateIfValid();
 
     // Option Row //
     void onCaseSensitiveClicked();
@@ -76,6 +76,17 @@ private:
     Ui::MainWindow *ui;
 
 private:
-    void initTipsAndWarnings();
+    void initWarnings();
+    void initTips();
     void initConnects();
+
+    void removeDuplicatedSeparatorFromSearchFor();
+    void checkReplacementAndUpdateIfValid();
+
+    void checkStartConditions();
+
+    void updateInFileLine();
+    void updateInFolderLine();
+
+    void updateOutPath();
 };
