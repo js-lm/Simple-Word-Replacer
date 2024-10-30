@@ -450,8 +450,7 @@ void MainWindow::onStartButtonClicked(){
     qDebug() << "onStartButtonClicked() called";
     checkStartConditions(false);
 
-    //ReplaceWord replacer(this);
-    //replacer.start();
+    ReplaceWord replacer(this);
 }
 
 void MainWindow::onPreviewButtonClicked(){

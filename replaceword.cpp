@@ -43,7 +43,10 @@ void ReplaceWord::fetchFileList(){
             return;
         }
 
-        fileList = directory.entryList(QDir::Files);
+        QStringList relativeFileList{directory.entryList(QDir::Files)};
+        for(const QString &fileName : relativeFileList){
+            fileList.append(directory.absoluteFilePath(fileName));
+        }
         qDebug() << "updated fileList to " << fileList;
     }
 }
@@ -66,7 +69,7 @@ void ReplaceWord::startReplacing(const QString &path, size_t &totalReplaceCount)
     QFile file(path);
 
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text)){
-        qDebug() << "unable to open file " << path << " for reading";
+        qDebug() << "unable to open file for reading " << path;
         return;
     }else{
         qDebug() << "opened " << path;
@@ -84,46 +87,26 @@ void ReplaceWord::startReplacing(const QString &path, size_t &totalReplaceCount)
     qDebug() << "replaced " << fileReplaceCount << " words in " << path;
 
     QFileInfo fileInfo{path};
-    QString outFilePath{fileInfo.fileName()};
-    qDebug() << "created outFilePath = " << outFilePath;
+    QString outFileName{fileInfo.fileName()};
+    qDebug() << "created outFilePath = " << outFileName;
 
     if(mainWindow->isReplacingFileName){
-        replaceWord(outFilePath, isCaseSensitive);
+        replaceWord(outFileName, isCaseSensitive);
     }
 
     if(mainWindow->isAddingSuffix){
-        auto dotIndex{outFilePath.lastIndexOf('.')};
+        auto dotIndex{outFileName.lastIndexOf('.')};
 
         if(dotIndex == -1){
-            outFilePath += mainWindow->suffix;
+            outFileName += mainWindow->suffix;
         }else{
-            outFilePath.insert(dotIndex, mainWindow->suffix);
+            outFileName.insert(dotIndex, mainWindow->suffix);
         }
     }
 
-    writeFile(content, outFilePath);
+    writeFile(content, mainWindow->outPath + QDir::separator() + outFileName);
 }
-/*
-    auto replaceString = [this, &fileReplaceCount, &totalReplaceCount, isCaseSensitive](QString &string, bool isFileName){
-        if(mainWindow->newWord.size() <= 1){
-            for(const QString& oldWord : mainWindow->oldWord){
-                if(!isFileName){
-                    fileReplaceCount += string.count(oldWord, isCaseSensitive);
-                    totalReplaceCount += fileReplaceCount;
-                }
-                string.replace(oldWord, mainWindow->newWord[0], isCaseSensitive);
-            }
-        }else{
-            for(size_t i{0}; i < mainWindow->oldWord.size(); i++){
-                if(!isFileName){
-                    fileReplaceCount += string.count(mainWindow->oldWord[i], isCaseSensitive);
-                    totalReplaceCount += fileReplaceCount;
-                }
-                string.replace(mainWindow->oldWord[i], mainWindow->newWord[i], isCaseSensitive);
-            }
-        }
-    };
-*/
+
 size_t ReplaceWord::replaceWord(QString &string, Qt::CaseSensitivity isCaseSensitive){
     qDebug() << "replaceWord() called";
     size_t replaceCount{0};
@@ -148,9 +131,11 @@ void ReplaceWord::writeFile(const QString &content, const QString &path){
     QFile file(path);
 
     if(!file.open(QIODevice::WriteOnly | QIODevice::Text)){
-        qDebug() << "unable to open file " << path << " for writing";
+        qDebug() << "unable to open file for writing " << path;
         return;
     }
 
-
+    QTextStream out(&file);
+    out << content;
+    file.close();
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include "replaceword.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui{class MainWindow;}
