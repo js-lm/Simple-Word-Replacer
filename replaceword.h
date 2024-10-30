@@ -14,7 +14,9 @@ public:
 private:
     void fetchFileList();
 
-    void replaceWord(const QString &path, size_t &totalReplaceCount);
+    bool copyFile(const QString &source, const QString &destination);
+    void startReplacing(const QString &path, size_t &totalReplaceCount);
+    size_t replaceWord(QString &string, Qt::CaseSensitivity isCaseSensitive);
     void writeFile(const QString &content, const QString &filename);
 
 private:
