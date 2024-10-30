@@ -11,8 +11,14 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , separator(",")
     , isFile(true)
+    , isCaseSensitive(false)
+    , separator(",")
+    , isReplacingFileName(false)
+    , isAddingSuffix(true)
+    , suffix("_modified")
+    , isReplacingOriginalFile(false)
+    , isCreatingBackup(false)
 {
     ui->setupUi(this);
 
@@ -443,6 +449,8 @@ void MainWindow::updateOutPath(bool isShowingWarning){
 
 void MainWindow::suffixLineFocusLost(){
     qDebug() << "suffixLine out of focus";
+    suffix = ui->suffixLine->text();
+    qDebug() << "updated suffix to " << suffix;
 }
 
 // Bottom Row //

@@ -88,12 +88,13 @@ void ReplaceWord::startReplacing(const QString &path, size_t &totalReplaceCount)
 
     QFileInfo fileInfo{path};
     QString outFileName{fileInfo.fileName()};
-    qDebug() << "created outFilePath = " << outFileName;
+    qDebug() << "created outFileName = " << outFileName;
 
     if(mainWindow->isReplacingFileName){
         replaceWord(outFileName, isCaseSensitive);
     }
 
+    qDebug() << "mainWindow->isAddingSuffix: " << mainWindow->isAddingSuffix;
     if(mainWindow->isAddingSuffix){
         auto dotIndex{outFileName.lastIndexOf('.')};
 
@@ -102,6 +103,8 @@ void ReplaceWord::startReplacing(const QString &path, size_t &totalReplaceCount)
         }else{
             outFileName.insert(dotIndex, mainWindow->suffix);
         }
+        qDebug() << "updated outFileName to " << outFileName;
+        qDebug() << "mainWindow->suffix: " << mainWindow->suffix;
     }
 
     writeFile(content, mainWindow->outPath + QDir::separator() + outFileName);
