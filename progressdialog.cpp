@@ -8,6 +8,8 @@ ProgressDialog::ProgressDialog(QWidget *parent)
     ui->setupUi(this);
 
     init();
+
+    connect(ui->nextButton, &QPushButton::clicked, this, [this](){close();});
 }
 
 ProgressDialog::~ProgressDialog(){
@@ -17,8 +19,7 @@ ProgressDialog::~ProgressDialog(){
 void ProgressDialog::init(){
     qDebug() << "init() called";
     ui->logScreen->clear();
-    ui->nextButton->setEnabled(false);
-    ui->cancelButton->setEnabled(true);
+    updateButtons(false);
 
     ui->completedCountLabel->setText("- / - Completed");
     ui->estimatedTime->setText("Estimated Remaining Time: -:--:--");
@@ -35,11 +36,30 @@ void ProgressDialog::updateProgress(size_t totalFiles
     qDebug() << "updateProgress() called";
     ui->completedCountLabel->setText(QString::number(processedFileNumber) + " / " + QString::number(totalFiles) + " Completed");
 
-
+    // currently it shows the elapsed time
+    ui->estimatedTime->setText(QString::number(elapsedTime));
 }
 
 void ProgressDialog::updateLogScreen(const QString &message){
     qDebug() << "updateLogScreen() called";
 
     ui->logScreen->appendPlainText(message);
+}
+
+void ProgressDialog::updateEstimatedTime(){
+    qDebug() << "updateLogScreen() called";
+
+    //ui->estimatedTime->setText();
+}
+
+void ProgressDialog::replaceCompleted(){
+    qDebug() << "replaceCompleted() called";
+    updateButtons(true);
+}
+
+void ProgressDialog::updateButtons(bool isFinished){
+    qDebug() << "updateButton() called";
+
+    ui->nextButton->setEnabled(isFinished);
+    ui->cancelButton->setEnabled(!isFinished);
 }

@@ -22,6 +22,8 @@ void ReplaceWord::start(){
     for(const QString &path : fileList){
         fileIndex++;
 
+        emit messager("Current File: " + path);
+
         QFile file(path);
 
         if(!file.open(QFile::ReadWrite)){

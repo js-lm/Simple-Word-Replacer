@@ -481,8 +481,9 @@ void MainWindow::onStartButtonClicked(){
 
             delete thread;
 
-            progressWindow->close();
+            progressWindow->replaceCompleted();
         });
+        //connect(replacer, &ReplaceWord::finished, progressWindow, &ProgressDialog::replaceCompleted);
 
         thread->start();
         progressWindow->show();

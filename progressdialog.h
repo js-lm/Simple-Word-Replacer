@@ -23,6 +23,12 @@ public:
 
     void updateLogScreen(const QString &message);
 
+    void replaceCompleted();
+
+    void updateButtons(bool isFinished);
+
 private:
     Ui::ProgressDialog *ui;
+
+    void updateEstimatedTime();
 };
