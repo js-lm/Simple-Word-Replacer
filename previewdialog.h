@@ -11,6 +11,8 @@ public:
     explicit PreviewDialog(QWidget *parent = nullptr);
     ~PreviewDialog();
 
+    void init();
+
 private:
     Ui::PreviewDialog *ui;
 };

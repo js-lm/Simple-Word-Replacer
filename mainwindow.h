@@ -2,6 +2,7 @@
 
 #include <QMainWindow>
 #include "replaceword.h"
+#include "progressdialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui{class MainWindow;}
@@ -75,6 +76,9 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+
+    ReplaceWord *replacer;
+    ProgressDialog *progressWindow;
 
 private:
     void initWarnings();

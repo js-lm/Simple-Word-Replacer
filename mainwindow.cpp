@@ -7,10 +7,13 @@
 #include <QDesktopServices>
 #include <QRegularExpression>
 #include <QMessageBox>
+#include <QThread>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , replacer(nullptr)
+    , progressWindow(new ProgressDialog(this))
     , isFile(true)
     , isCaseSensitive(false)
     , separator(",")
@@ -456,9 +459,37 @@ void MainWindow::suffixLineFocusLost(){
 // Bottom Row //
 void MainWindow::onStartButtonClicked(){
     qDebug() << "onStartButtonClicked() called";
-    checkStartConditions(false);
 
-    ReplaceWord replacer(this);
+    if(!checkStartConditions(false)){
+        return;
+    }
+
+    if(!replacer){
+        replacer = new ReplaceWord(this);
+        QThread *thread{new QThread};
+
+        replacer->moveToThread(thread);
+
+        connect(thread, &QThread::started, replacer, &ReplaceWord::start);
+        connect(replacer, &ReplaceWord::progress, progressWindow, &ProgressDialog::updateProgress);
+        connect(replacer, &ReplaceWord::messager, progressWindow, &ProgressDialog::updateLogScreen);
+        connect(replacer, &ReplaceWord::finished, this, [this, thread](){
+            replacer = nullptr;
+
+            thread->quit();
+            thread->wait();
+
+            delete thread;
+
+            progressWindow->close();
+        });
+
+        thread->start();
+        progressWindow->show();
+        progressWindow->init();
+    }else{
+        qDebug() << "replacer is not pointing to nullptr";
+    }
 }
 
 void MainWindow::onPreviewButtonClicked(){

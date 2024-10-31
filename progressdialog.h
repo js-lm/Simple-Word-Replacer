@@ -11,6 +11,18 @@ public:
     explicit ProgressDialog(QWidget *parent = nullptr);
     ~ProgressDialog();
 
+    void init();
+
+    void updateProgress(size_t totalFiles
+                        , size_t processedFileNumber
+                        , const QString &filePath
+                        , qint64 fileSize
+                        , size_t elapsedTime
+                        , size_t wordReplaceCount
+                    );
+
+    void updateLogScreen(const QString &message);
+
 private:
     Ui::ProgressDialog *ui;
 };
