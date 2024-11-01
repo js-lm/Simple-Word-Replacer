@@ -13,13 +13,12 @@ public:
 
     void init();
 
-    void updateProgress(size_t totalFiles
+    void updateProgress(qint64 fileSize
+                        , qint64 totalFileSize
+                        , size_t totalElapsedTime
                         , size_t processedFileNumber
-                        , const QString &filePath
-                        , qint64 fileSize
-                        , size_t elapsedTime
-                        , size_t wordReplaceCount
-                    );
+                        , size_t totalFiles
+                        );
 
     void updateLogScreen(const QString &message);
 
@@ -29,6 +28,12 @@ public:
 
 private:
     Ui::ProgressDialog *ui;
+
+    size_t estimatedTime;
+
+    qint64 processedSize;
+
+private:
 
     void updateEstimatedTime();
 };

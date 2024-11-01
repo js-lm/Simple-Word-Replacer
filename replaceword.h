@@ -31,14 +31,15 @@ private:
 
     QStringList fileList;
 
+    qint64 totalSize;
+
 signals:
     void messager(const QString &message);
-    void progress(size_t totalFiles
-                  , size_t currentIndex
-                  , const QString &filePath
-                  , qint64 fileSize
-                  , size_t elapsedTime
-                  , size_t wordReplaceCount
+    void progress(qint64 fileSize
+                  , qint64 totalFileSize
+                  , size_t totalElapsedTime
+                  , size_t processedFileNumber
+                  , size_t totalFiles
                 );
     void finished(size_t totalElapsedTime);
 };

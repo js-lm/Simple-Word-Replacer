@@ -93,6 +93,9 @@
             <property name="focusPolicy">
              <enum>Qt::FocusPolicy::ClickFocus</enum>
             </property>
+            <property name="text">
+             <string>/Users/josh/Documents/Samples/Sample Plain Text</string>
+            </property>
             <property name="clearButtonEnabled">
              <bool>true</bool>
             </property>
@@ -107,6 +110,9 @@
           </property>
           <property name="text">
            <string>⚠ warningLabel</string>
+          </property>
+          <property name="buddy">
+           <cstring>inFileLine</cstring>
           </property>
          </widget>
         </item>
@@ -149,6 +155,9 @@
           <property name="text">
            <string>⚠ warningLabel</string>
           </property>
+          <property name="buddy">
+           <cstring>inFolderLine</cstring>
+          </property>
          </widget>
         </item>
        </layout>
@@ -186,6 +195,9 @@
            <property name="text">
             <string>Search for: ⓘ</string>
            </property>
+           <property name="buddy">
+            <cstring>oldWordLine</cstring>
+           </property>
           </widget>
          </item>
          <item>
@@ -194,7 +206,7 @@
             <enum>Qt::FocusPolicy::ClickFocus</enum>
            </property>
            <property name="plainText">
-            <string/>
+            <string>This</string>
            </property>
            <property name="placeholderText">
             <string>e.g., knowledge,voilà,serendipity,a journey of a thousand miles begins with a single step</string>
@@ -212,6 +224,9 @@
           <widget class="QLabel" name="newWordLabel">
            <property name="text">
             <string>Replace with: ⓘ</string>
+           </property>
+           <property name="buddy">
+            <cstring>newWordLine</cstring>
            </property>
           </widget>
          </item>
@@ -234,6 +249,9 @@
          </property>
          <property name="text">
           <string>⚠ warningLabel</string>
+         </property>
+         <property name="buddy">
+          <cstring>oldWordLine</cstring>
          </property>
         </widget>
        </item>
@@ -267,6 +285,9 @@
           <widget class="QLabel" name="separatorLabel">
            <property name="text">
             <string>Separator: ⓘ</string>
+           </property>
+           <property name="buddy">
+            <cstring>separatorLine</cstring>
            </property>
           </widget>
          </item>
@@ -325,6 +346,9 @@
          </property>
          <property name="text">
           <string>⚠ warningLabel</string>
+         </property>
+         <property name="buddy">
+          <cstring>separatorLine</cstring>
          </property>
         </widget>
        </item>
@@ -468,6 +492,9 @@
            <property name="focusPolicy">
             <enum>Qt::FocusPolicy::ClickFocus</enum>
            </property>
+           <property name="text">
+            <string>/Users/josh/Downloads/untitled folder</string>
+           </property>
            <property name="clearButtonEnabled">
             <bool>true</bool>
            </property>
@@ -492,6 +519,9 @@
          </property>
          <property name="text">
           <string>⚠ warningLabel</string>
+         </property>
+         <property name="buddy">
+          <cstring>outPathLine</cstring>
          </property>
         </widget>
        </item>
@@ -579,6 +609,20 @@
    <header>/Users/josh/Application Projects/WordReplacer/customeditor.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>selectInPath</tabstop>
+  <tabstop>inFileButton</tabstop>
+  <tabstop>inFolderButton</tabstop>
+  <tabstop>isCaseSensitive</tabstop>
+  <tabstop>isReplacingFileName</tabstop>
+  <tabstop>isAddingSuffix</tabstop>
+  <tabstop>isReplacingOriginal</tabstop>
+  <tabstop>isCreatingBackup</tabstop>
+  <tabstop>outPathButton</tabstop>
+  <tabstop>openOutFolderButton</tabstop>
+  <tabstop>previewButton</tabstop>
+  <tabstop>startButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

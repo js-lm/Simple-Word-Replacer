@@ -22,28 +22,47 @@ void ProgressDialog::init(){
     updateButtons(false);
 
     ui->completedCountLabel->setText("- / - Completed");
-    ui->estimatedTime->setText("Estimated Remaining Time: -:--:--");
+    ui->estimatedTime->setText("Estimated Remaining Time: --:--:--");
+    ui->progressBar->setValue(0);
 
+    estimatedTime = 0;
 }
 
-void ProgressDialog::updateProgress(size_t totalFiles
+void ProgressDialog::updateProgress(qint64 fileSize
+                                    , qint64 totalFileSize
+                                    , size_t totalElapsedTime
                                     , size_t processedFileNumber
-                                    , const QString &filePath
-                                    , qint64 fileSize
-                                    , size_t elapsedTime
-                                    , size_t wordReplaceCount
+                                    , size_t totalFiles
                                 ){
     qDebug() << "updateProgress() called";
     ui->completedCountLabel->setText(QString::number(processedFileNumber) + " / " + QString::number(totalFiles) + " Completed");
 
-    // currently it shows the elapsed time
-    ui->estimatedTime->setText(QString::number(elapsedTime));
+    ui->progressBar->setValue(100 * processedFileNumber / totalFiles);
+
+    // calculate the estimated time
+    processedSize += fileSize;
+
+    estimatedTime = (double)totalElapsedTime / processedSize * (totalFileSize - processedSize);
+
+    qDebug() << "totalElapsedTime: " << totalElapsedTime;
+    qDebug() << "processedSize: " << processedSize;
+    qDebug() << "totalFileSize: " << totalFileSize;
+    qDebug() << "estimatedTime: " << estimatedTime;
+
+    QString hour{QString::number(estimatedTime / 3600000).rightJustified(2, '0')};
+    QString minute{QString::number(estimatedTime / 60000 % 60).rightJustified(2, '0')};
+    QString second{QString::number(estimatedTime / 1000 % 60).rightJustified(2, '0')};
+
+    if(processedFileNumber > 1){
+        QString estimatedTime{"Estimated Remaining Time: " + hour + ":" + minute + ":" + second};
+        ui->estimatedTime->setText(estimatedTime);
+    }
 }
 
 void ProgressDialog::updateLogScreen(const QString &message){
     qDebug() << "updateLogScreen() called";
 
-    ui->logScreen->appendPlainText(message);
+    ui->logScreen->append(message);
 }
 
 void ProgressDialog::updateEstimatedTime(){
