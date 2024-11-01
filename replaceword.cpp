@@ -18,11 +18,28 @@ void ReplaceWord::start(){
     QElapsedTimer totalTimer;
     totalTimer.start();
 
-    emit messager("> File list:\n" + fileList.join("\n"));
-    emit messager("> Searching for: " + mainWindow->oldWord.join(mainWindow->separator));
-    emit messager("> Replacing with: " + mainWindow->newWord.join(mainWindow->separator));
-    emit messager("> Separator: " + mainWindow->separator);
-    emit messager("> Is case sensitive: " + QString::number(mainWindow->isCaseSensitive));
+    emit messager("> File list:\n" + fileList.join("      \n"));
+    emit messager("> Search and replace...");
+
+    //         "Search for" -> "Replacing with"
+    for(size_t i{0}; i < mainWindow->oldWord.size(); i++){
+        //emit messager("      Replace \"" + mainWindow->oldWord[i] + "\" to \"" + mainWindow->newWord[i] + "\"");
+        emit messager("-   Replace <b style='color:Salmon;'>" + mainWindow->oldWord[i] + "</b> with <b style='color:PaleGreen;'>" + mainWindow->newWord[i] + "</b>");
+    }
+
+    QString yesNo{mainWindow->isCaseSensitive ? "Yes" : "No"};
+    emit messager("> Is case sensitive: " + yesNo);
+
+    yesNo = mainWindow->isReplacingOriginalFile ? "Yes" : "No";
+    emit messager("> Is replacing original file: " + yesNo);
+
+    if(yesNo == "No"){
+        yesNo = mainWindow->isReplacingFileName ? "Yes" : "No";
+        emit messager("> Is replacing file name: " + yesNo);
+
+        yesNo = mainWindow->isAddingSuffix ? "Yes" : "No";
+        emit messager("> Is radding suffix: " + yesNo + " [" + mainWindow->suffix + "]");
+    }
 
     for(const QString &path : fileList){
         fileIndex++;
@@ -43,12 +60,20 @@ void ReplaceWord::start(){
 
         if(mainWindow->isCreatingBackup){
             emit messager("      Creating backup... ");
-            if(!copyFile(path, mainWindow->outPath)){
+
+            QString copyDestination{mainWindow->outPath + QDir::separator() + "Backup"};
+
+            if(!QDir(copyDestination).exists()){
+                QDir().mkdir(copyDestination);
+                 emit messager("      Created backup folder " + copyDestination);
+            }
+
+            if(!copyFile(path, copyDestination)){
                 emit messager("      Unable to create back up for " + path);
                 emit messager("      Skipping this file...");
                 continue;
             }
-            emit messager("      Created backup");
+            emit messager("      Created backup in " + copyDestination);
         }
 
         emit messager("      Searching...");
@@ -72,16 +97,16 @@ void ReplaceWord::start(){
     auto totalElapsedTime{totalTimer.elapsed()};
 
     emit messager("\n> Replacement Completed");
-    emit messager("Replaced total " + QString::number(replaceCount) + " word(s)");
+    emit messager("> Replaced total " + QString::number(replaceCount) + " word(s)");
 
     if(totalElapsedTime < 10000){
-        emit messager("Total elasped time: " + QString::number(totalElapsedTime) + "ms");
+        emit messager("> Total elasped time: " + QString::number(totalElapsedTime) + "ms");
     }else{
         QString hour{QString::number(totalElapsedTime / 3600000).rightJustified(2, '0')};
         QString minute{QString::number(totalElapsedTime / 60000 % 60).rightJustified(2, '0')};
         QString second{QString::number(totalElapsedTime / 1000 % 60).rightJustified(2, '0')};
 
-        emit messager("Total elasped time: " + hour + ":" + minute + ":" + second);
+        emit messager("> Total elasped time: " + hour + ":" + minute + ":" + second);
     }
 
     emit finished(totalElapsedTime);
@@ -127,7 +152,7 @@ bool ReplaceWord::copyFile(const QString &source, const QString &destination){
     qDebug() << "copyFile() called";
     QFileInfo fileInfo{source};
 
-    if(QFile::copy(source, destination + "/Backup/" + fileInfo.fileName())){
+    if(QFile::copy(source, destination + QDir::separator() + fileInfo.fileName())){
         qDebug() << "File copied successfully " << source;
         return true;
     }

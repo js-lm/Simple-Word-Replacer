@@ -435,12 +435,14 @@ void MainWindow::updateOutPath(bool isShowingWarning){
             ui->outFolderWarning->setText("⚠ No Folder Entered");
         }
         ui->openOutFolderButton->setEnabled(false);
+        outPath.clear();
         return;
     }else if(!QDir(path).exists()){
         if(isShowingWarning){
             ui->outFolderWarning->setText("⚠ Folder Does Not Exist");
         }
         ui->openOutFolderButton->setEnabled(false);
+        outPath.clear();
         return;
     }
 
@@ -519,6 +521,15 @@ bool MainWindow::checkStartConditions(bool isPreviewing){
     removeDuplicatedSeparatorFromSearchFor();
     checkReplacementAndUpdateIfValid();
     updateOutPath(true);
+
+    qDebug() << "isFile: " << isFile;
+    qDebug() << "filePath.isEmpty(): " << filePath.isEmpty();
+    qDebug() << "folderPath.isEmpty(): " << folderPath.isEmpty();
+    qDebug() << "isReplacingOriginalFile: " << isReplacingOriginalFile;
+    qDebug() << "isPreviewing: " << isPreviewing;
+    qDebug() << "outPath.isEmpty(): " << outPath.isEmpty();
+    qDebug() << "outPath: " << outPath;
+    qDebug() << "oldWord.isEmpty(): " << oldWord.isEmpty();
 
     if(
         (isFile && filePath.isEmpty()) ||
