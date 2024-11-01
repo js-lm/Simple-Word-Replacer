@@ -13,7 +13,6 @@ ReplaceWord::ReplaceWord(MainWindow *mainWindow)
 
 void ReplaceWord::start(){
     size_t replaceCount{0};
-    //auto totalFiles{fileList.size()};
     size_t fileIndex{0};
 
     QElapsedTimer totalTimer;
@@ -34,7 +33,8 @@ void ReplaceWord::start(){
         QFile file(path);
 
         if(!file.open(QFile::ReadWrite)){
-            emit messager("Unable to open " + path + "\nSkipping this file...");
+            emit messager("      Unable to open " + path);
+            emit messager("      Skipping this file...");
             continue;
         }
 
@@ -42,15 +42,16 @@ void ReplaceWord::start(){
         file.close();
 
         if(mainWindow->isCreatingBackup){
-            emit messager("Creating backup... ");
+            emit messager("      Creating backup... ");
             if(!copyFile(path, mainWindow->outPath)){
-                emit messager("Unable to create back up for " + path + "\nSkipping this file...");
+                emit messager("      Unable to create back up for " + path);
+                emit messager("      Skipping this file...");
                 continue;
             }
-            emit messager("Created backup");
+            emit messager("      Created backup");
         }
 
-        emit messager("Searching...");
+        emit messager("      Searching...");
 
         QElapsedTimer timer;
         timer.start();
@@ -58,7 +59,7 @@ void ReplaceWord::start(){
         size_t wordReplaceCount{startReplacing(path)};
         replaceCount += wordReplaceCount;
 
-        emit messager("Time elapsed: " + QString::number(timer.elapsed()) + "ms");
+        emit messager("      Time elapsed: " + QString::number(timer.elapsed()) + "ms");
 
         emit progress(size
                       , totalSize
@@ -69,6 +70,19 @@ void ReplaceWord::start(){
     }
 
     auto totalElapsedTime{totalTimer.elapsed()};
+
+    emit messager("\n> Replacement Completed");
+    emit messager("Replaced total " + QString::number(replaceCount) + " word(s)");
+
+    if(totalElapsedTime < 10000){
+        emit messager("Total elasped time: " + QString::number(totalElapsedTime) + "ms");
+    }else{
+        QString hour{QString::number(totalElapsedTime / 3600000).rightJustified(2, '0')};
+        QString minute{QString::number(totalElapsedTime / 60000 % 60).rightJustified(2, '0')};
+        QString second{QString::number(totalElapsedTime / 1000 % 60).rightJustified(2, '0')};
+
+        emit messager("Total elasped time: " + hour + ":" + minute + ":" + second);
+    }
 
     emit finished(totalElapsedTime);
     delete this;
@@ -130,7 +144,7 @@ size_t ReplaceWord::startReplacing(const QString &path){
 
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text)){
         qDebug() << "unable to open file for reading " << path;
-        emit messager("Unable to open file for reading: " + path);
+        emit messager("      Unable to open file for reading: " + path);
         return 0;
     }else{
         qDebug() << "opened " << path;
@@ -144,7 +158,7 @@ size_t ReplaceWord::startReplacing(const QString &path){
 
     size_t wordReplaceCount{replaceWord(content, isCaseSensitive)};
     qDebug() << "replaced " << wordReplaceCount << " words in " << path;
-    emit messager("Replaced " + QString::number(wordReplaceCount) + " word");
+    emit messager("      Replaced " + QString::number(wordReplaceCount) + " word");
 
     if(mainWindow->isReplacingOriginalFile && wordReplaceCount == 0){
         return 0;
@@ -173,7 +187,7 @@ size_t ReplaceWord::startReplacing(const QString &path){
     }
 
     writeFile(content, mainWindow->outPath + QDir::separator() + outFileName);
-    emit messager("Created " + outFileName);
+    emit messager("      Created " + outFileName);
 
     return wordReplaceCount;
 }
