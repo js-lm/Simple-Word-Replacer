@@ -3,10 +3,13 @@
 #include <QMainWindow>
 #include "replaceword.h"
 #include "progressdialog.h"
+#include "previewdialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui{class MainWindow;}
 QT_END_NAMESPACE
+
+class PreviewDialog;
 
 class MainWindow : public QMainWindow{
     Q_OBJECT
@@ -79,6 +82,7 @@ private:
 
     ReplaceWord *replacer;
     ProgressDialog *progressWindow;
+    PreviewDialog *previewDialog;
 
 private:
     void initWarnings();

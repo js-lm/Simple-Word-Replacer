@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , replacer(nullptr)
     , progressWindow(new ProgressDialog(this))
+    , previewDialog(new PreviewDialog(this, this))
     , isFile(true)
     , isCaseSensitive(false)
     , separator(",")
@@ -498,7 +499,8 @@ void MainWindow::onPreviewButtonClicked(){
     qDebug() << "onPreviewButtonClicked() called";
     checkStartConditions(true);
 
-    // preview();
+    previewDialog->show();
+    previewDialog->init();
 }
 
 bool MainWindow::checkStartConditions(bool isPreviewing){

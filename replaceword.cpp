@@ -21,24 +21,30 @@ void ReplaceWord::start(){
     emit messager("> File list:\n" + fileList.join("      \n"));
     emit messager("> Search and replace...");
 
-    //         "Search for" -> "Replacing with"
     for(size_t i{0}; i < mainWindow->oldWord.size(); i++){
-        //emit messager("      Replace \"" + mainWindow->oldWord[i] + "\" to \"" + mainWindow->newWord[i] + "\"");
-        emit messager("-   Replace <b style='color:Salmon;'>" + mainWindow->oldWord[i] + "</b> with <b style='color:PaleGreen;'>" + mainWindow->newWord[i] + "</b>");
+        size_t newWordIndex{mainWindow->newWord.size() > 1 ? i : 0};
+
+        if(mainWindow->newWord[newWordIndex] == ""){
+            emit messager("-   Remove <b style='color:Salmon;'>" + mainWindow->oldWord[i] + "</b> ");
+        }else{
+            emit messager("-   Replace <b style='color:Salmon;'>"
+                          + mainWindow->oldWord[i]
+                          + "</b> with <b style='color:PaleGreen;'>"
+                          + mainWindow->newWord[newWordIndex]
+                          + "</b>"
+                          );
+        }
     }
 
     QString yesNo{mainWindow->isCaseSensitive ? "Yes" : "No"};
     emit messager("> Is case sensitive: " + yesNo);
-
     yesNo = mainWindow->isReplacingOriginalFile ? "Yes" : "No";
     emit messager("> Is replacing original file: " + yesNo);
-
     if(yesNo == "No"){
         yesNo = mainWindow->isReplacingFileName ? "Yes" : "No";
         emit messager("> Is replacing file name: " + yesNo);
-
-        yesNo = mainWindow->isAddingSuffix ? "Yes" : "No";
-        emit messager("> Is radding suffix: " + yesNo + " [" + mainWindow->suffix + "]");
+        yesNo = mainWindow->isAddingSuffix ? "Yes [" + mainWindow->suffix + "]" : "No";
+        emit messager("> Is adding suffix: " + yesNo);
     }
 
     for(const QString &path : fileList){
