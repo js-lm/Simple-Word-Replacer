@@ -497,10 +497,12 @@ void MainWindow::onStartButtonClicked(){
 
 void MainWindow::onPreviewButtonClicked(){
     qDebug() << "onPreviewButtonClicked() called";
-    checkStartConditions(true);
+
+    if(!checkStartConditions(true)) return;
 
     previewDialog->show();
     previewDialog->init();
+    previewDialog->fetchFiles();
 }
 
 bool MainWindow::checkStartConditions(bool isPreviewing){

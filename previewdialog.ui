@@ -103,6 +103,12 @@
           </item>
           <item>
            <widget class="QTextEdit" name="previewWindow">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
             <property name="html">
              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
@@ -153,6 +159,30 @@ li.checked::marker { content: &quot;\2612&quot;; }
         </widget>
        </widget>
       </item>
+      <item>
+       <layout class="QHBoxLayout" name="selectBtn">
+        <item>
+         <spacer name="selectSpacer">
+          <property name="orientation">
+           <enum>Qt::Orientation::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="selectButton">
+          <property name="text">
+           <string>Select</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
      </layout>
     </widget>
    </item>
@@ -202,7 +232,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
           <string>Case Sensitive</string>
          </property>
          <property name="checkable">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -212,7 +242,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
           <string>Is replacing file name</string>
          </property>
          <property name="checkable">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -222,7 +252,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
           <string>Is adding suffix:</string>
          </property>
          <property name="checkable">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
         </widget>
        </item>

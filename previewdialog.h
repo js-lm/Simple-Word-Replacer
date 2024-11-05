@@ -3,6 +3,7 @@
 #include <QDialog>
 
 #include "mainwindow.h"
+#include <QListWidgetItem>
 
 namespace Ui{class PreviewDialog;}
 
@@ -16,10 +17,12 @@ public:
     ~PreviewDialog();
 
     void init();
-
     void fetchFiles();
+    void updatePreview();
 
     void onBackButtonClicked();
+    void onFileListDoubleClicked(QListWidgetItem *selection);
+    void onShowOriginalClicked();
 
 private:
     Ui::PreviewDialog *ui;
@@ -27,4 +30,5 @@ private:
 
     QStringList filesList;
 
+    QString currentSelection;
 };

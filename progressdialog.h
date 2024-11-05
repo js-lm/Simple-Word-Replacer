@@ -34,6 +34,5 @@ private:
     qint64 processedSize;
 
 private:
-
     void updateEstimatedTime();
 };
