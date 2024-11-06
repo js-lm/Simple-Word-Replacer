@@ -103,21 +103,24 @@ void PreviewDialog::updatePreview(){
     auto isCaseSensitive{mainWindow->isCaseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive};
 
     if(!ui->isShowOriginal->isChecked()){
+        QString newWord{};
         if(mainWindow->newWord.size() <= 1){
             for(const QString &oldWord : mainWindow->oldWord){
                 replaceCount += preview.count(oldWord, isCaseSensitive);
 
-                preview.replace(oldWord, mainWindow->newWord[0], isCaseSensitive);
+                newWord = "<span style='color: grey;'>" + (mainWindow->newWord[0] == "" ? "[DELETED]" : mainWindow->newWord[0]) + "</span>";
+                preview.replace(oldWord, newWord, isCaseSensitive);
             }
         }else{
             for(size_t i{0}; i < mainWindow->oldWord.size(); i++){
                 replaceCount += preview.count(mainWindow->oldWord[i], isCaseSensitive);
 
-                preview.replace(mainWindow->oldWord[i], mainWindow->newWord[i], isCaseSensitive);
+                newWord = "<span style='color: grey;'>" + (mainWindow->newWord[i] == "" ? "[DELETED]" : mainWindow->newWord[i]) + "</span>";
+                preview.replace(mainWindow->oldWord[i], newWord, isCaseSensitive);
             }
         }
     }
 
-    ui->previewWindow->setText(preview);
+    ui->previewWindow->setHtml(preview);
     ui->wordReplaceCount->setText("Total Word(s) Replaced: " + QString::number(replaceCount));
 }
