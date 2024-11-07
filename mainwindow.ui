@@ -209,7 +209,7 @@
             <enum>Qt::FocusPolicy::ClickFocus</enum>
            </property>
            <property name="plainText">
-            <string>This</string>
+            <string>this,and,that,or,whatever,are,all,fun</string>
            </property>
            <property name="placeholderText">
             <string>e.g., knowledge,voilà,serendipity,a journey of a thousand miles begins with a single step</string>
@@ -239,7 +239,7 @@
             <enum>Qt::FocusPolicy::ClickFocus</enum>
            </property>
            <property name="plainText">
-            <string/>
+            <string>those,&amp;&amp;,,,who?,um...,what!!!,sad</string>
            </property>
            <property name="placeholderText">
             <string>e.g., insight,there it is,happy accident,an odyssey of infinite strides starts with one footstep</string>

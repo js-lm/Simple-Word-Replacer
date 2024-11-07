@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QFile>
 #include <QListWidgetItem>
+#include <QRegularExpression>
 
 PreviewDialog::PreviewDialog(QWidget *parent, MainWindow *mainWinow)
     : QDialog(parent)
@@ -20,7 +21,6 @@ PreviewDialog::PreviewDialog(QWidget *parent, MainWindow *mainWinow)
     connect(ui->backButton, &QPushButton::clicked, this, &PreviewDialog::onBackButtonClicked);
     connect(ui->fileSelect, &QListWidget::itemDoubleClicked, this, &PreviewDialog::onFileListDoubleClicked);
     connect(ui->isShowOriginal, &QPushButton::clicked, this, &PreviewDialog::onShowOriginalClicked);
-
 
 
 
@@ -81,6 +81,7 @@ void PreviewDialog::onFileListDoubleClicked(QListWidgetItem *selection){
 void PreviewDialog::onShowOriginalClicked(){
     qDebug() << "onShowOriginalClicked() called";
     ui->isHighlighWord->setEnabled(!ui->isShowOriginal->isChecked());
+    ui->isShowingDeletedWord->setEnabled(!ui->isShowOriginal->isChecked());
     updatePreview();
 }
 
@@ -99,27 +100,54 @@ void PreviewDialog::updatePreview(){
     QString preview{in.readAll()};
     file.close();
 
+    ui->previewWindow->setText(preview);
+
     size_t replaceCount{0};
     auto isCaseSensitive{mainWindow->isCaseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive};
 
     if(!ui->isShowOriginal->isChecked()){
         QString newWord{};
+        QString deletedWord{};
+
         if(mainWindow->newWord.size() <= 1){
             for(const QString &oldWord : mainWindow->oldWord){
                 replaceCount += preview.count(oldWord, isCaseSensitive);
 
-                newWord = "<span style='color: grey;'>" + (mainWindow->newWord[0] == "" ? "[DELETED]" : mainWindow->newWord[0]) + "</span>";
+                /*newWord = "<span style='color: "
+                          + (mainWindow->newWord[0] == "" ? "red; text-decoration: line-through;'>" + oldWord
+                                                          : "green;'>" + mainWindow->newWord[0])
+                          + "</span>";*/
+
+
+                deletedWord = ui->isShowingDeletedWord->isEnabled() ? "<span style='color: red; text-decoration: line-through;'>" + oldWord + "</span>"
+                                                                    : "";
+                newWord =
+                    deletedWord + (ui->isHighlighWord->isEnabled()
+                                ? "<span style='color: green;'>" + mainWindow->newWord[0] + "</span>"
+                                : mainWindow->newWord[0]);
+
                 preview.replace(oldWord, newWord, isCaseSensitive);
             }
         }else{
             for(size_t i{0}; i < mainWindow->oldWord.size(); i++){
                 replaceCount += preview.count(mainWindow->oldWord[i], isCaseSensitive);
 
-                newWord = "<span style='color: grey;'>" + (mainWindow->newWord[i] == "" ? "[DELETED]" : mainWindow->newWord[i]) + "</span>";
+                qDebug() << "ui->isShowingDeletedWord->isEnabled() " << ui->isShowingDeletedWord->isEnabled();
+                qDebug() << "ui->isHighlighWord->isEnabled() " << ui->isHighlighWord->isEnabled();
+
+                deletedWord = ui->isShowingDeletedWord->isEnabled() ? "<span style='color: red; text-decoration: line-through;'>" + mainWindow->oldWord[i] + "</span>"
+                                                                    : "";
+                newWord =
+                    deletedWord + (ui->isHighlighWord->isEnabled()
+                                       ? "<span style='color: green;'>" + mainWindow->newWord[i] + "</span>"
+                                       : mainWindow->newWord[i]);
+
                 preview.replace(mainWindow->oldWord[i], newWord, isCaseSensitive);
             }
         }
     }
+
+    preview.replace("\n", "<br>");
 
     ui->previewWindow->setHtml(preview);
     ui->wordReplaceCount->setText("Total Word(s) Replaced: " + QString::number(replaceCount));

@@ -10,6 +10,11 @@
     <height>699</height>
    </rect>
   </property>
+  <property name="font">
+   <font>
+    <family>.AppleSystemUIFont</family>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
@@ -89,6 +94,13 @@
              <widget class="QCheckBox" name="isHighlighWord">
               <property name="text">
                <string>Highlight Word(s)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="isShowingDeletedWord">
+              <property name="text">
+               <string>Show Deleted Word(s)</string>
               </property>
              </widget>
             </item>
