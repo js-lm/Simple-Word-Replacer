@@ -23,6 +23,8 @@ public:
     void onBackButtonClicked();
     void onFileListDoubleClicked(QListWidgetItem *selection);
     void onShowOriginalClicked();
+    void onHighlightClicked();
+    void onShowingDeletedWordClicked();
 
 private:
     Ui::PreviewDialog *ui;

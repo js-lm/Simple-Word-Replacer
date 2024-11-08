@@ -21,9 +21,8 @@ PreviewDialog::PreviewDialog(QWidget *parent, MainWindow *mainWinow)
     connect(ui->backButton, &QPushButton::clicked, this, &PreviewDialog::onBackButtonClicked);
     connect(ui->fileSelect, &QListWidget::itemDoubleClicked, this, &PreviewDialog::onFileListDoubleClicked);
     connect(ui->isShowOriginal, &QPushButton::clicked, this, &PreviewDialog::onShowOriginalClicked);
-
-
-
+    connect(ui->isHighlightingWord, &QPushButton::clicked, this, &PreviewDialog::onHighlightClicked);
+    connect(ui->isShowingDeletedWord, &QPushButton::clicked, this, &PreviewDialog::onShowingDeletedWordClicked);
 }
 
 PreviewDialog::~PreviewDialog(){
@@ -80,8 +79,23 @@ void PreviewDialog::onFileListDoubleClicked(QListWidgetItem *selection){
 
 void PreviewDialog::onShowOriginalClicked(){
     qDebug() << "onShowOriginalClicked() called";
-    ui->isHighlighWord->setEnabled(!ui->isShowOriginal->isChecked());
-    ui->isShowingDeletedWord->setEnabled(!ui->isShowOriginal->isChecked());
+    ui->isHighlightingWord->setEnabled(!ui->isShowOriginal->isChecked());
+    ui->isShowingDeletedWord->setEnabled(!ui->isShowOriginal->isChecked() && ui->isHighlightingWord->isChecked());
+
+    qDebug() << "ui->isHighlighWord->isChecked() " << ui->isHighlightingWord->isChecked();
+    qDebug() << "ui->isShowingDeletedWord->isChecked() " << ui->isShowingDeletedWord->isChecked();
+
+    updatePreview();
+}
+
+void PreviewDialog::onHighlightClicked(){
+    qDebug() << "onHighlightClicked() called";
+    ui->isShowingDeletedWord->setEnabled(ui->isHighlightingWord->isChecked());
+    updatePreview();
+}
+
+void PreviewDialog::onShowingDeletedWordClicked(){
+    qDebug() << "onShowingDeletedWordClicked() called";
     updatePreview();
 }
 
@@ -106,49 +120,46 @@ void PreviewDialog::updatePreview(){
     auto isCaseSensitive{mainWindow->isCaseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive};
 
     if(!ui->isShowOriginal->isChecked()){
-        QString newWord{};
-        QString deletedWord{};
+        QTextCursor cursor(ui->previewWindow->document());
 
-        if(mainWindow->newWord.size() <= 1){
-            for(const QString &oldWord : mainWindow->oldWord){
-                replaceCount += preview.count(oldWord, isCaseSensitive);
+        for(size_t i{0}; i < mainWindow->oldWord.size(); i++){
+            const QString &searchForWord{mainWindow->oldWord[i]};
+            const QString replaceWithWord{mainWindow->newWord.value(i)};
 
-                /*newWord = "<span style='color: "
-                          + (mainWindow->newWord[0] == "" ? "red; text-decoration: line-through;'>" + oldWord
-                                                          : "green;'>" + mainWindow->newWord[0])
-                          + "</span>";*/
+            cursor.setPosition(0);
+            QTextDocument::FindFlags isCaseSensitiveFlag{isCaseSensitive ? QTextDocument::FindCaseSensitively : QTextDocument::FindFlags()};
 
+            while(!cursor.isNull() && !cursor.atEnd()){
+                cursor = ui->previewWindow->document()->find(searchForWord, cursor, isCaseSensitiveFlag);
 
-                deletedWord = ui->isShowingDeletedWord->isEnabled() ? "<span style='color: red; text-decoration: line-through;'>" + oldWord + "</span>"
-                                                                    : "";
-                newWord =
-                    deletedWord + (ui->isHighlighWord->isEnabled()
-                                ? "<span style='color: green;'>" + mainWindow->newWord[0] + "</span>"
-                                : mainWindow->newWord[0]);
+                if(!cursor.isNull()){
+                    replaceCount++;
 
-                preview.replace(oldWord, newWord, isCaseSensitive);
-            }
-        }else{
-            for(size_t i{0}; i < mainWindow->oldWord.size(); i++){
-                replaceCount += preview.count(mainWindow->oldWord[i], isCaseSensitive);
+                    if(ui->isShowingDeletedWord->isChecked() && ui->isShowingDeletedWord->isEnabled()){
+                        QTextCharFormat oldWordFormat;
+                        oldWordFormat.setForeground(Qt::red);
+                        oldWordFormat.setFontStrikeOut(true);
 
-                qDebug() << "ui->isShowingDeletedWord->isEnabled() " << ui->isShowingDeletedWord->isEnabled();
-                qDebug() << "ui->isHighlighWord->isEnabled() " << ui->isHighlighWord->isEnabled();
+                        cursor.mergeCharFormat(oldWordFormat);
+                    }else{
+                        cursor.select(QTextCursor::WordUnderCursor);
+                        cursor.removeSelectedText();
+                    }
 
-                deletedWord = ui->isShowingDeletedWord->isEnabled() ? "<span style='color: red; text-decoration: line-through;'>" + mainWindow->oldWord[i] + "</span>"
-                                                                    : "";
-                newWord =
-                    deletedWord + (ui->isHighlighWord->isEnabled()
-                                       ? "<span style='color: green;'>" + mainWindow->newWord[i] + "</span>"
-                                       : mainWindow->newWord[i]);
+                    if(!replaceWithWord.isEmpty()){
+                        cursor.clearSelection();
 
-                preview.replace(mainWindow->oldWord[i], newWord, isCaseSensitive);
+                        QTextCharFormat newWordFormat;
+                        if(ui->isHighlightingWord->isChecked()){
+                            newWordFormat.setForeground(Qt::green);
+                        }
+
+                        cursor.insertText(replaceWithWord, newWordFormat);
+                    }
+                }
             }
         }
     }
 
-    preview.replace("\n", "<br>");
-
-    ui->previewWindow->setHtml(preview);
     ui->wordReplaceCount->setText("Total Word(s) Replaced: " + QString::number(replaceCount));
 }

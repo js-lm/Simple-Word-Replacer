@@ -91,7 +91,7 @@
              </spacer>
             </item>
             <item>
-             <widget class="QCheckBox" name="isHighlighWord">
+             <widget class="QCheckBox" name="isHighlightingWord">
               <property name="text">
                <string>Highlight Word(s)</string>
               </property>
@@ -99,8 +99,14 @@
             </item>
             <item>
              <widget class="QCheckBox" name="isShowingDeletedWord">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="text">
                <string>Show Deleted Word(s)</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
               </property>
              </widget>
             </item>
