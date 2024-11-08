@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>512</width>
-    <height>699</height>
+    <width>580</width>
+    <height>779</height>
    </rect>
   </property>
   <property name="font">
@@ -63,13 +63,16 @@
         <property name="handleWidth">
          <number>10</number>
         </property>
+        <property name="childrenCollapsible">
+         <bool>false</bool>
+        </property>
         <widget class="QWidget" name="layoutWidget">
          <layout class="QVBoxLayout" name="previewLayout">
           <property name="spacing">
            <number>0</number>
           </property>
           <item>
-           <layout class="QHBoxLayout" name="wordsHighlight">
+           <layout class="QHBoxLayout" name="wordsHighlight" stretch="1,5,1,1,1,1,1">
             <item>
              <widget class="QLabel" name="previewLabel">
               <property name="text">
@@ -101,6 +104,19 @@
              </widget>
             </item>
             <item>
+             <spacer name="horizontalSpacer_3">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
              <widget class="QCheckBox" name="isShowingDeletedWord">
               <property name="enabled">
                <bool>true</bool>
@@ -112,6 +128,19 @@
                <bool>false</bool>
               </property>
              </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_4">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
             </item>
             <item>
              <widget class="QCheckBox" name="isShowOriginal">
@@ -176,33 +205,33 @@ li.checked::marker { content: &quot;\2612&quot;; }
             </property>
            </widget>
           </item>
+          <item>
+           <layout class="QHBoxLayout" name="selectBtn">
+            <item>
+             <spacer name="selectSpacer">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="selectButton">
+              <property name="text">
+               <string>Select</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
          </layout>
         </widget>
        </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="selectBtn">
-        <item>
-         <spacer name="selectSpacer">
-          <property name="orientation">
-           <enum>Qt::Orientation::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="selectButton">
-          <property name="text">
-           <string>Select</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
       </item>
      </layout>
     </widget>
@@ -246,7 +275,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="checkBoxes">
+      <layout class="QHBoxLayout" name="checkBoxes" stretch="1,1,1,1,1,6">
        <item>
         <widget class="QCheckBox" name="isCaseSensitive">
          <property name="text">
@@ -258,6 +287,19 @@ li.checked::marker { content: &quot;\2612&quot;; }
         </widget>
        </item>
        <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
         <widget class="QCheckBox" name="isReplacingFileName">
          <property name="text">
           <string>Is replacing file name</string>
@@ -266,6 +308,19 @@ li.checked::marker { content: &quot;\2612&quot;; }
           <bool>true</bool>
          </property>
         </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item>
         <widget class="QCheckBox" name="isAddingSuffix">

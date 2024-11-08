@@ -25,6 +25,7 @@ public:
     void onShowOriginalClicked();
     void onHighlightClicked();
     void onShowingDeletedWordClicked();
+    void onSelectButtonClicked();
 
 private:
     Ui::PreviewDialog *ui;

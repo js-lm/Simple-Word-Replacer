@@ -6,6 +6,7 @@
 #include <QListWidgetItem>
 #include <QRegularExpression>
 #include <QScrollBar>
+#include <QMessageBox>
 
 PreviewDialog::PreviewDialog(QWidget *parent, MainWindow *mainWinow)
     : QDialog(parent)
@@ -24,6 +25,7 @@ PreviewDialog::PreviewDialog(QWidget *parent, MainWindow *mainWinow)
     connect(ui->isShowOriginal, &QPushButton::clicked, this, &PreviewDialog::onShowOriginalClicked);
     connect(ui->isHighlightingWord, &QPushButton::clicked, this, &PreviewDialog::onHighlightClicked);
     connect(ui->isShowingDeletedWord, &QPushButton::clicked, this, &PreviewDialog::onShowingDeletedWordClicked);
+    connect(ui->selectButton, &QPushButton::clicked, this, &PreviewDialog::onSelectButtonClicked);
 }
 
 PreviewDialog::~PreviewDialog(){
@@ -86,18 +88,31 @@ void PreviewDialog::onShowOriginalClicked(){
     qDebug() << "ui->isHighlighWord->isChecked() " << ui->isHighlightingWord->isChecked();
     qDebug() << "ui->isShowingDeletedWord->isChecked() " << ui->isShowingDeletedWord->isChecked();
 
+    if(ui->previewWindow->toPlainText().isEmpty()) return;
     updatePreview();
 }
 
 void PreviewDialog::onHighlightClicked(){
     qDebug() << "onHighlightClicked() called";
     ui->isShowingDeletedWord->setEnabled(ui->isHighlightingWord->isChecked());
+    if(ui->previewWindow->toPlainText().isEmpty()) return;
     updatePreview();
 }
 
 void PreviewDialog::onShowingDeletedWordClicked(){
     qDebug() << "onShowingDeletedWordClicked() called";
+    if(ui->previewWindow->toPlainText().isEmpty()) return;
     updatePreview();
+}
+
+void PreviewDialog::onSelectButtonClicked(){
+    qDebug() << "onSelectButtonClicked() called";
+
+    QListWidgetItem *currentItem{ui->fileSelect->currentItem()};
+    if(currentItem){
+        currentSelection = currentItem->text();
+        updatePreview();
+    }
 }
 
 void PreviewDialog::updatePreview(){
@@ -105,90 +120,88 @@ void PreviewDialog::updatePreview(){
 
     int previousCursorPosition{ui->previewWindow->textCursor().position()};
     int previousScrollPosition{ui->previewWindow->verticalScrollBar()->value()};
-
     init();
 
     QFile file(currentSelection);
-
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text)){
         qDebug() << "cannot open " << file.fileName();
+        return;
     }
-
     QTextStream in(&file);
     QString preview{in.readAll()};
     file.close();
 
-    ui->previewWindow->setText(preview);
-
     size_t replaceCount{0};
 
+    QTextCharFormat defaultFormat;
+
     if(!ui->isShowOriginal->isChecked()){
-        QTextDocument::FindFlags isCaseSensitive{mainWindow->isCaseSensitive ? QTextDocument::FindCaseSensitively : QTextDocument::FindFlags()};
-        isCaseSensitive |= QTextDocument::FindWholeWords;
+        if(preview.size() > 524288 && ui->isHighlightingWord->isChecked() && ui->isHighlightingWord->isEnabled()){ // ~1MB
+            QMessageBox::StandardButton isProceed;
+            isProceed = QMessageBox::warning(this, "Proceed with Preview?",
+                                            "The file is quite large, and previewing it with highlighting may take a long time.\n\n"
+                                            "Do you still want to proceed?",
+                                            QMessageBox::Yes | QMessageBox::No);
+            if(isProceed == QMessageBox::No) return;
+        }
 
-        QTextCursor cursor(ui->previewWindow->document());
+        QTextDocument text;
+        QTextCursor cursor(&text);
 
-        for(size_t i{0}; i < mainWindow->oldWord.size(); i++){
-            cursor = ui->previewWindow->textCursor(); // cursor would be null otherwise for some reason
-            cursor.setPosition(0);
+        size_t currentPosition{0};
+        while(currentPosition < preview.length()){
+            bool foundMatch{false};
 
-            const QString &oldWord{mainWindow->oldWord[i]};
-            const QString &newWord{mainWindow->newWord.size() <= 1 ? mainWindow->newWord[0] : mainWindow->newWord[i]};
+            for(size_t i{0}; i < mainWindow->oldWord.size(); i++){
+                const QString &oldWord{mainWindow->oldWord[i]};
+                const QString &newWord{mainWindow->newWord.size() <= 1 ? mainWindow->newWord[0] : mainWindow->newWord[i]};
 
-            qDebug() << "Document text length: " << ui->previewWindow->document()->toPlainText().length();
-            qDebug() << "cursor.isNull() " << cursor.isNull();
-            qDebug() << "cursor.atEnd() " << cursor.atEnd();
-
-            while(!cursor.isNull() && !cursor.atEnd()){
-                replaceCount++;
-                qDebug() << "Loop [" << i << "]";
-                qDebug() << "Searching for " << oldWord;
-                qDebug() << "Replacing with " << newWord;
-                cursor = ui->previewWindow->document()->find(oldWord, cursor, isCaseSensitive);
-                if(cursor.isNull()) break;
-
-                qDebug() << "Cursor Position Before Removing: " << cursor.position();
-
-                cursor.select(QTextCursor::WordUnderCursor);
-                qDebug() << "Removing " << cursor.selectedText();
-                cursor.removeSelectedText();
-                cursor.clearSelection();
-
-                qDebug() << "Cursor Position After Removing and Before Adding New Word: " << cursor.position();
-
-                if(ui->isShowingDeletedWord->isChecked()
-                    && ui->isShowingDeletedWord->isEnabled()){
-
-                    QTextCharFormat oldWordFormat;
-                    oldWordFormat.setForeground(Qt::red);
-                    oldWordFormat.setFontStrikeOut(true);
-
-                    cursor.insertText(oldWord, oldWordFormat);
+                bool isMatch{false};
+                if(mainWindow->isCaseSensitive){
+                    isMatch = preview.mid(currentPosition, oldWord.length()) == oldWord;
+                }else{
+                    isMatch = preview.mid(currentPosition, oldWord.length()).compare(oldWord, Qt::CaseInsensitive) == 0;
                 }
 
-                cursor.clearSelection();
-                qDebug() << "Cursor Position After Inserting Deleted Word: " << cursor.position();
+                if(isMatch){
+                    foundMatch = true;
+                    replaceCount++;
 
-                QTextCharFormat newWordFormat;
-                if(ui->isHighlightingWord->isChecked()){
-                    newWordFormat.setForeground(Qt::green);
+                    if(ui->isShowingDeletedWord->isChecked() && ui->isShowingDeletedWord->isEnabled()){
+                        QTextCharFormat oldWordFormat;
+                        oldWordFormat.setForeground(Qt::red);
+                        oldWordFormat.setFontStrikeOut(true);
+                        cursor.insertText(oldWord, oldWordFormat);
+                    }
+
+                    if(ui->isHighlightingWord->isChecked()){
+                        QTextCharFormat newWordFormat;
+                        newWordFormat.setForeground(Qt::green);
+                        cursor.insertText(newWord, newWordFormat);
+                    }else{
+                        cursor.insertText(newWord);
+                    }
+
+                    currentPosition += oldWord.length();
+                    break;
                 }
-                qDebug() << "Cursor Selection Before Insertion " << cursor.selectedText();
-                cursor.insertText(newWord, newWordFormat);
-                qDebug() << "Cursor Selection After Insertion " << cursor.selectedText();
+            }
 
-
-                qDebug() << "Cursor Position After Inserting New Word: " << cursor.position();
-                cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, newWord.length());
-                qDebug() << "Cursor Position After Moving: " << cursor.position();
+            if(!foundMatch){
+                cursor.setCharFormat(defaultFormat);
+                cursor.insertText(QString(preview[currentPosition]));
+                currentPosition++;
             }
         }
+
+        ui->previewWindow->setDocument(text.clone());
+    }else{
+        ui->previewWindow->setText(preview);
     }
 
-    QTextCursor cursor{ui->previewWindow->textCursor()};
-    cursor.setPosition(previousCursorPosition);
-    ui->previewWindow->setTextCursor(cursor);
+    QTextCursor finalCursor{ui->previewWindow->textCursor()};
+    finalCursor.setPosition(previousCursorPosition);
+    ui->previewWindow->setTextCursor(finalCursor);
     ui->previewWindow->verticalScrollBar()->setValue(previousScrollPosition);
-
     ui->wordReplaceCount->setText("Total Word(s) Replaced: " + QString::number(replaceCount));
 }
