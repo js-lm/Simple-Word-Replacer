@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QListWidgetItem>
 #include <QRegularExpression>
+#include <QScrollBar>
 
 PreviewDialog::PreviewDialog(QWidget *parent, MainWindow *mainWinow)
     : QDialog(parent)
@@ -102,6 +103,9 @@ void PreviewDialog::onShowingDeletedWordClicked(){
 void PreviewDialog::updatePreview(){
     qDebug() << "updatePreview() called";
 
+    int previousCursorPosition{ui->previewWindow->textCursor().position()};
+    int previousScrollPosition{ui->previewWindow->verticalScrollBar()->value()};
+
     init();
 
     QFile file(currentSelection);
@@ -117,49 +121,74 @@ void PreviewDialog::updatePreview(){
     ui->previewWindow->setText(preview);
 
     size_t replaceCount{0};
-    auto isCaseSensitive{mainWindow->isCaseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive};
 
     if(!ui->isShowOriginal->isChecked()){
+        QTextDocument::FindFlags isCaseSensitive{mainWindow->isCaseSensitive ? QTextDocument::FindCaseSensitively : QTextDocument::FindFlags()};
+        isCaseSensitive |= QTextDocument::FindWholeWords;
+
         QTextCursor cursor(ui->previewWindow->document());
 
         for(size_t i{0}; i < mainWindow->oldWord.size(); i++){
-            const QString &searchForWord{mainWindow->oldWord[i]};
-            const QString replaceWithWord{mainWindow->newWord.value(i)};
-
+            cursor = ui->previewWindow->textCursor(); // cursor would be null otherwise for some reason
             cursor.setPosition(0);
-            QTextDocument::FindFlags isCaseSensitiveFlag{isCaseSensitive ? QTextDocument::FindCaseSensitively : QTextDocument::FindFlags()};
+
+            const QString &oldWord{mainWindow->oldWord[i]};
+            const QString &newWord{mainWindow->newWord.size() <= 1 ? mainWindow->newWord[0] : mainWindow->newWord[i]};
+
+            qDebug() << "Document text length: " << ui->previewWindow->document()->toPlainText().length();
+            qDebug() << "cursor.isNull() " << cursor.isNull();
+            qDebug() << "cursor.atEnd() " << cursor.atEnd();
 
             while(!cursor.isNull() && !cursor.atEnd()){
-                cursor = ui->previewWindow->document()->find(searchForWord, cursor, isCaseSensitiveFlag);
+                replaceCount++;
+                qDebug() << "Loop [" << i << "]";
+                qDebug() << "Searching for " << oldWord;
+                qDebug() << "Replacing with " << newWord;
+                cursor = ui->previewWindow->document()->find(oldWord, cursor, isCaseSensitive);
+                if(cursor.isNull()) break;
 
-                if(!cursor.isNull()){
-                    replaceCount++;
+                qDebug() << "Cursor Position Before Removing: " << cursor.position();
 
-                    if(ui->isShowingDeletedWord->isChecked() && ui->isShowingDeletedWord->isEnabled()){
-                        QTextCharFormat oldWordFormat;
-                        oldWordFormat.setForeground(Qt::red);
-                        oldWordFormat.setFontStrikeOut(true);
+                cursor.select(QTextCursor::WordUnderCursor);
+                qDebug() << "Removing " << cursor.selectedText();
+                cursor.removeSelectedText();
+                cursor.clearSelection();
 
-                        cursor.mergeCharFormat(oldWordFormat);
-                    }else{
-                        cursor.select(QTextCursor::WordUnderCursor);
-                        cursor.removeSelectedText();
-                    }
+                qDebug() << "Cursor Position After Removing and Before Adding New Word: " << cursor.position();
 
-                    if(!replaceWithWord.isEmpty()){
-                        cursor.clearSelection();
+                if(ui->isShowingDeletedWord->isChecked()
+                    && ui->isShowingDeletedWord->isEnabled()){
 
-                        QTextCharFormat newWordFormat;
-                        if(ui->isHighlightingWord->isChecked()){
-                            newWordFormat.setForeground(Qt::green);
-                        }
+                    QTextCharFormat oldWordFormat;
+                    oldWordFormat.setForeground(Qt::red);
+                    oldWordFormat.setFontStrikeOut(true);
 
-                        cursor.insertText(replaceWithWord, newWordFormat);
-                    }
+                    cursor.insertText(oldWord, oldWordFormat);
                 }
+
+                cursor.clearSelection();
+                qDebug() << "Cursor Position After Inserting Deleted Word: " << cursor.position();
+
+                QTextCharFormat newWordFormat;
+                if(ui->isHighlightingWord->isChecked()){
+                    newWordFormat.setForeground(Qt::green);
+                }
+                qDebug() << "Cursor Selection Before Insertion " << cursor.selectedText();
+                cursor.insertText(newWord, newWordFormat);
+                qDebug() << "Cursor Selection After Insertion " << cursor.selectedText();
+
+
+                qDebug() << "Cursor Position After Inserting New Word: " << cursor.position();
+                cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, newWord.length());
+                qDebug() << "Cursor Position After Moving: " << cursor.position();
             }
         }
     }
+
+    QTextCursor cursor{ui->previewWindow->textCursor()};
+    cursor.setPosition(previousCursorPosition);
+    ui->previewWindow->setTextCursor(cursor);
+    ui->previewWindow->verticalScrollBar()->setValue(previousScrollPosition);
 
     ui->wordReplaceCount->setText("Total Word(s) Replaced: " + QString::number(replaceCount));
 }

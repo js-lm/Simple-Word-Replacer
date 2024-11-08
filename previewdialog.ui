@@ -95,12 +95,15 @@
               <property name="text">
                <string>Highlight Word(s)</string>
               </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
              </widget>
             </item>
             <item>
              <widget class="QCheckBox" name="isShowingDeletedWord">
               <property name="enabled">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="text">
                <string>Show Deleted Word(s)</string>
