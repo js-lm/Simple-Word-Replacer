@@ -73,9 +73,14 @@ void ReplaceWord::start(){
             qint64 size{file.size()};
 
             emit messager("");
-            emit messager(QString(">> Processing File[%2] %1").arg(newFileName, QString::number(index)));
+            emit messager(QString(">> Processing File[%2] - %1").arg(newFileName, QString::number(index)));
 
             readFile(path, content);
+
+            if(mainWindow->isCreatingBackup){
+                createBackup(path, newFileName);
+            }
+
             replaceWord(content);
 
             if(mainWindow->isReplacingFileName){
@@ -96,7 +101,7 @@ void ReplaceWord::start(){
     }
 
     done(totalTimer.elapsed());
-    delete this;
+    this->deleteLater();
 }
 
 void ReplaceWord::done(size_t elapsedTime){
@@ -113,7 +118,7 @@ void ReplaceWord::done(size_t elapsedTime){
         QString minute{QString::number(totalElapsedTime / 60000 % 60).rightJustified(2, '0')};
         QString second{QString::number(totalElapsedTime / 1000 % 60).rightJustified(2, '0')};
 
-        emit messager(QString(">> Total elasped time: %1:%2:%2").arg(hour, minute, second));
+        emit messager(QString(">> Total elasped time: %1:%2:%3").arg(hour, minute, second));
     }
 
     emit finished(totalElapsedTime);
@@ -277,12 +282,12 @@ void ReplaceWord::createBackup(const QString &path, const QString &newFileName){
     }
 
     if(QFile::copy(path, destination)){
-        emit messager("* Created backup in");
-        emit messager(QString("%1┕> %2").arg(sp, destination));
+        emit messager(QString("%1* Created backup in").arg(sp));
+        emit messager(QString("%1%1┕> %2").arg(sp, destination));
     }else{
-        emit messager(QString("%1* Unable to create back up for%2").arg(failure, b));
-        emit messager(QString("%1┕> %2").arg(sp, destination));
-        emit messager(QString("%1- Skipping this file...").arg(sp));
+        emit messager(QString("%3%1* Unable to create back up for%2").arg(failure, b, sp));
+        emit messager(QString("%1%1┕> %2").arg(sp, destination));
+        emit messager(QString("%1%1- Skipping this file...").arg(sp));
         canCurrentLoopContinue = false;
     }
 }
@@ -327,7 +332,14 @@ void ReplaceWord::addSuffix(QString &newFileName){
     qDebug() << "addSuffix() called";
     if(!canCurrentLoopContinue || !canContinue()) return;
 
-    newFileName += mainWindow->suffix;
+    auto dotIndex{newFileName.lastIndexOf('.')};
+
+    if(dotIndex == -1){
+        newFileName += mainWindow->suffix;
+    }else{
+        newFileName.insert(dotIndex, mainWindow->suffix);
+    }
+
     emit messager(QString("%1* Added suffix to \"%2\"").arg(sp, newFileName));
 }
 
