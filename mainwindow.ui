@@ -77,7 +77,8 @@
       </property>
       <widget class="QWidget" name="selectFile">
        <attribute name="icon">
-        <iconset theme="QIcon::ThemeIcon::EditCopy"/>
+        <iconset resource="resources.qrc">
+         <normaloff>:/icon/resources/open_file.svg</normaloff>:/icon/resources/open_file.svg</iconset>
        </attribute>
        <attribute name="title">
         <string>Select File</string>
@@ -124,7 +125,8 @@
       </widget>
       <widget class="QWidget" name="selectFolder">
        <attribute name="icon">
-        <iconset theme="QIcon::ThemeIcon::DocumentOpen"/>
+        <iconset resource="resources.qrc">
+         <normaloff>:/icon/resources/open_folder.svg</normaloff>:/icon/resources/open_folder.svg</iconset>
        </attribute>
        <attribute name="title">
         <string>Select Folder</string>
@@ -391,7 +393,7 @@
          <item>
           <widget class="QCheckBox" name="isReplacingFileName">
            <property name="text">
-            <string>Also Replace File Name(s)</string>
+            <string>Also Rename File Name(s)</string>
            </property>
           </widget>
          </item>

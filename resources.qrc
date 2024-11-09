@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/icon">
         <file>resources/WordReplacer.svg</file>
+        <file>resources/open_file.svg</file>
+        <file>resources/open_folder.svg</file>
     </qresource>
 </RCC>
