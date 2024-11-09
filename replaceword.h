@@ -10,13 +10,18 @@ namespace Ui{class ReplaceWord;}
 
 class MainWindow;
 
+class ProgressDialog;
+
 class ReplaceWord : public QObject{
     Q_OBJECT
 
 public:
-    ReplaceWord(MainWindow *mainWindow);
+    ReplaceWord(MainWindow *mainWindow, ProgressDialog *progressDialog);
 
     void start();
+
+public:
+    bool isCancelled;
 
 private:
     void fetchFileList();
@@ -28,6 +33,7 @@ private:
 
 private:
     MainWindow *mainWindow;
+    ProgressDialog *progressDialog;
 
     QStringList fileList;
 

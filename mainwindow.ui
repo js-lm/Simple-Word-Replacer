@@ -94,7 +94,7 @@
              <enum>Qt::FocusPolicy::ClickFocus</enum>
             </property>
             <property name="text">
-             <string>/Users/josh/Documents/Samples/Sample Plain Text</string>
+             <string/>
             </property>
             <property name="clearButtonEnabled">
              <bool>true</bool>
@@ -209,7 +209,7 @@
             <enum>Qt::FocusPolicy::ClickFocus</enum>
            </property>
            <property name="plainText">
-            <string>this,and,that,or,whatever,are,all,fun</string>
+            <string/>
            </property>
            <property name="placeholderText">
             <string>e.g., knowledge,voilà,serendipity,a journey of a thousand miles begins with a single step</string>
@@ -239,7 +239,7 @@
             <enum>Qt::FocusPolicy::ClickFocus</enum>
            </property>
            <property name="plainText">
-            <string>those,&amp;&amp;,,,who?,um...,what!!!,sad</string>
+            <string/>
            </property>
            <property name="placeholderText">
             <string>e.g., insight,there it is,happy accident,an odyssey of infinite strides starts with one footstep</string>
@@ -499,7 +499,7 @@
             <enum>Qt::FocusPolicy::ClickFocus</enum>
            </property>
            <property name="text">
-            <string>/Users/josh/Downloads/untitled folder</string>
+            <string/>
            </property>
            <property name="clearButtonEnabled">
             <bool>true</bool>
@@ -607,12 +607,12 @@
   <customwidget>
    <class>CustomLineEdit</class>
    <extends>QLineEdit</extends>
-   <header>/Users/josh/Application Projects/WordReplacer/customeditor.h</header>
+   <header>customeditor.h</header>
   </customwidget>
   <customwidget>
    <class>CustomPlainTextEdit</class>
    <extends>QPlainTextEdit</extends>
-   <header>/Users/josh/Application Projects/WordReplacer/customeditor.h</header>
+   <header>customeditor.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

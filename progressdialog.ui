@@ -77,20 +77,17 @@
     </widget>
    </item>
    <item>
-    <spacer name="bottomSpacer">
-     <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
+    <widget class="QLabel" name="pleaseWaitLabel">
+     <property name="styleSheet">
+      <string notr="true">color:rgb(255, 165, 0)</string>
      </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::Policy::Fixed</enum>
+     <property name="text">
+      <string>⚠ warningLabel</string>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>5</height>
-      </size>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
-    </spacer>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="cancelLayout">

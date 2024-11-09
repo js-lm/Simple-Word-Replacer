@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QDialog>
+#include <QTime>
 
 namespace Ui{class ProgressDialog;}
 
@@ -26,13 +27,17 @@ public:
 
     void updateButtons(bool isFinished);
 
+public:
+    bool isCancelled;
+
 private:
     Ui::ProgressDialog *ui;
 
-    size_t estimatedTime;
+    QTimer *timer;
 
+    size_t estimatedTime;
     qint64 processedSize;
 
 private:
-    void updateEstimatedTime();
+    void updateEstimatedTimeDisplay();
 };

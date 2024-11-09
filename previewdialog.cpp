@@ -66,6 +66,8 @@ void PreviewDialog::fetchFiles(){
             ui->fileSelect->addItem(file.absoluteFilePath());
         }
     }
+
+    ui->fileCountLabel->setText("Total File Number(s): " + QString::number(ui->fileSelect->count()));
 }
 
 void PreviewDialog::onBackButtonClicked(){
@@ -136,13 +138,16 @@ void PreviewDialog::updatePreview(){
     QTextCharFormat defaultFormat;
 
     if(!ui->isShowOriginal->isChecked()){
-        if(preview.size() > 524288 && ui->isHighlightingWord->isChecked() && ui->isHighlightingWord->isEnabled()){ // ~1MB
+        if(preview.size() > 524288){ // ~1MB
+            QString message{(ui->isHighlightingWord->isChecked() && ui->isHighlightingWord->isEnabled()) ?
+                            "The file is quite large, and previewing it with highlighting may take a long time.\n\nDo you want to only show the first 512 KiB of text?" :
+                            "The file is quite large, and previewing it may take a long time.\n\nDo you want to only show the first 512 KiB of text?",
+                            };
             QMessageBox::StandardButton isProceed;
-            isProceed = QMessageBox::warning(this, "Proceed with Preview?",
-                                            "The file is quite large, and previewing it with highlighting may take a long time.\n\n"
-                                            "Do you still want to proceed?",
-                                            QMessageBox::Yes | QMessageBox::No);
-            if(isProceed == QMessageBox::No) return;
+            isProceed = QMessageBox::warning(this, "Do You Really Want To Proceed?", message, QMessageBox::Yes | QMessageBox::No);
+            if(isProceed == QMessageBox::Yes){
+                preview = preview.left(262144);
+            }
         }
 
         QTextDocument text;
@@ -169,14 +174,14 @@ void PreviewDialog::updatePreview(){
 
                     if(ui->isShowingDeletedWord->isChecked() && ui->isShowingDeletedWord->isEnabled()){
                         QTextCharFormat oldWordFormat;
-                        oldWordFormat.setForeground(Qt::red);
+                        oldWordFormat.setForeground(QColor(250, 128, 114));
                         oldWordFormat.setFontStrikeOut(true);
                         cursor.insertText(oldWord, oldWordFormat);
                     }
 
                     if(ui->isHighlightingWord->isChecked()){
                         QTextCharFormat newWordFormat;
-                        newWordFormat.setForeground(Qt::green);
+                        newWordFormat.setForeground(QColor(152, 251, 152));
                         cursor.insertText(newWord, newWordFormat);
                     }else{
                         cursor.insertText(newWord);

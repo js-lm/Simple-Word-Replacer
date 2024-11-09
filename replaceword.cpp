@@ -5,8 +5,10 @@
 #include <QString>
 #include <QElapsedTimer>
 
-ReplaceWord::ReplaceWord(MainWindow *mainWindow)
+ReplaceWord::ReplaceWord(MainWindow *mainWindow, ProgressDialog *progressDialog)
     : mainWindow(mainWindow)
+    , progressDialog(progressDialog)
+    , isCancelled(false)
 {
     fetchFileList();
 }
@@ -47,7 +49,47 @@ void ReplaceWord::start(){
         emit messager("> Is adding suffix: " + yesNo);
     }
 
+    QString copyDestination{mainWindow->outPath + QDir::separator() + "Backup"};
+
+    if(mainWindow->isCreatingBackup){
+        emit messager("\n> Checking Backup Directory");
+
+        if(mainWindow->isReplacingOriginalFile){
+            QString rootPath;
+
+            if(mainWindow->isFile){
+                QString backupPath{mainWindow->filePath};
+                QFileInfo fileInfo(backupPath);
+                rootPath = fileInfo.absolutePath();
+            }else{
+                rootPath = mainWindow->folderPath;
+            }
+
+            copyDestination = rootPath + QDir::separator() + "Backup";
+        }
+
+        qDebug() << "copyDestination " << copyDestination;
+
+
+        if(!QDir(copyDestination).exists()){
+            if(!QDir().mkdir(copyDestination)){
+                emit messager("      <b style='color:Salmon;'>Failed to create backup folder " + copyDestination + "</b>");
+            }else{
+                emit messager("      Created backup folder " + copyDestination);
+            }
+        }else{
+            emit messager("      Backup folder already exist " + copyDestination);
+        }
+    }
+
     for(const QString &path : fileList){
+        if(progressDialog->isCancelled){
+            emit messager("");
+            emit messager("<b style='color:Salmon;'>> User Cancelled</b>");
+            progressDialog->isCancelled = false;
+            break;
+        }
+
         fileIndex++;
 
         emit messager("\n> Opening File...");
@@ -56,8 +98,8 @@ void ReplaceWord::start(){
         QFile file(path);
 
         if(!file.open(QFile::ReadWrite)){
-            emit messager("      Unable to open " + path);
-            emit messager("      Skipping this file...");
+            emit messager("      <b style='color:Salmon;'>Unable to open " + path + "</b>");
+            emit messager("      <b style='color:Salmon;'>Skipping this file...</b>");
             continue;
         }
 
@@ -67,19 +109,18 @@ void ReplaceWord::start(){
         if(mainWindow->isCreatingBackup){
             emit messager("      Creating backup... ");
 
-            QString copyDestination{mainWindow->outPath + QDir::separator() + "Backup"};
+            QString destinationFilePath{QDir(copyDestination).filePath(QFileInfo(path).fileName())};
 
-            if(!QDir(copyDestination).exists()){
-                QDir().mkdir(copyDestination);
-                 emit messager("      Created backup folder " + copyDestination);
+            if(QFile(destinationFilePath).exists()){
+                QFile::remove(destinationFilePath);
             }
 
             if(!copyFile(path, copyDestination)){
-                emit messager("      Unable to create back up for " + path);
+                emit messager("      <b style='color:Salmon;'>Unable to create back up for " + path + "</b>");
                 emit messager("      Skipping this file...");
                 continue;
             }
-            emit messager("      Created backup in " + copyDestination);
+            emit messager("      Created backup in " + destinationFilePath);
         }
 
         emit messager("      Searching...");
@@ -102,10 +143,11 @@ void ReplaceWord::start(){
 
     auto totalElapsedTime{totalTimer.elapsed()};
 
-    emit messager("\n> Replacement Completed");
+    emit messager("");
+    emit messager("<b style='color:PaleGreen;'>> Replacement Completed</b>");
     emit messager("> Replaced total " + QString::number(replaceCount) + " word(s)");
 
-    if(totalElapsedTime < 10000){
+    if(totalElapsedTime < 4000){
         emit messager("> Total elasped time: " + QString::number(totalElapsedTime) + "ms");
     }else{
         QString hour{QString::number(totalElapsedTime / 3600000).rightJustified(2, '0')};
@@ -175,7 +217,7 @@ size_t ReplaceWord::startReplacing(const QString &path){
 
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text)){
         qDebug() << "unable to open file for reading " << path;
-        emit messager("      Unable to open file for reading: " + path);
+        emit messager("      <b style='color:Salmon;'>Unable to open file for reading: " + path + "</b>");
         return 0;
     }else{
         qDebug() << "opened " << path;
@@ -217,7 +259,21 @@ size_t ReplaceWord::startReplacing(const QString &path){
         qDebug() << "mainWindow->suffix: " << mainWindow->suffix;
     }
 
-    writeFile(content, mainWindow->outPath + QDir::separator() + outFileName);
+    QString outPutPath;
+
+    if(mainWindow->isReplacingOriginalFile){
+        if(mainWindow->isFile){
+            QString filePath{mainWindow->filePath};
+            QFileInfo fileInfo(filePath);
+            outPutPath = fileInfo.absolutePath();
+        }else{
+            outPutPath = mainWindow->folderPath;
+        }
+    }else{
+        outPutPath = mainWindow->outPath;
+    }
+
+    writeFile(content, outPutPath + QDir::separator() + outFileName);
     emit messager("      Created " + outFileName);
 
     return wordReplaceCount;
@@ -244,6 +300,7 @@ size_t ReplaceWord::replaceWord(QString &string, Qt::CaseSensitivity isCaseSensi
 
 void ReplaceWord::writeFile(const QString &content, const QString &path){
     qDebug() << "writeFile() called";
+
     QFile file(path);
 
     if(!file.open(QIODevice::WriteOnly | QIODevice::Text)){

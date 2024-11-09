@@ -29,6 +29,8 @@ MainWindow::MainWindow(QWidget *parent)
     initWarnings();
     initTips();
     initConnects();
+
+    this->setWindowTitle("Word Replacer V0 - By:Josh");
 }
 
 MainWindow::~MainWindow(){
@@ -45,17 +47,19 @@ void MainWindow::initWarnings(){
 
 void MainWindow::initTips(){
     ui->oldWordLabel->setToolTip(
-        "Enter the old word(s) you want to replace.\n\n"
-        "You can replace multiple old words separated by the separator of your specify.\n"
-        "The number and order of old words must match the number and order of new words,\n"
-        "unless you are replacing all old words with one new word."
+        "Enter the word(s) you want to search for.\n\n"
+        "You can search for multiple words, separated by your chosen separator.\n"
+        "The number and order of the words you're searching for should match\n"
+        "the number and order of the words you want to replace, unless you're\n"
+        "replacing all search words with a single word."
         );
     ui->newWordLabel->setToolTip(
-        "Enter the new word(s) to replace the old word(s).\n\n"
-        "You can input multiple new words separated by the separator.\n"
-        "The number and order of old words must match the number and order of new words.\n"
-        "If you input only one new word, it will replace all old word(s).\n"
-        "If you leave the new word input blank, it will remove all the old words."
+        "Enter the word(s) you want to replace the search terms with.\n\n"
+        "You can replace multiple words, separated by your chosen separator.\n"
+        "The number and order of the words you enter should match the number and order of\n"
+        "the words you searched for.\n\n"
+        "If you enter only one word, it will replace all search words with that one word.\n"
+        "If you leave this field empty, it will remove the words you searched for."
         );
     ui->separatorLabel->setToolTip(
         "You can specify a separator to separate multiple words.\n\n"
@@ -274,12 +278,18 @@ void MainWindow::checkReplacementAndUpdateIfValid(){
 
     if(oldWds.isEmpty()){
         ui->replaceWarningLabel->setText("⚠ Nothing to search for");
+        oldWord.clear();
+        newWord.clear();
         return;
     }else if(newWds.size() > 1 && oldWds.size() > newWds.size()){
         ui->replaceWarningLabel->setText("⚠ Size doesn't match - Too many words to search for");
+        oldWord.clear();
+        newWord.clear();
         return;
     }else if(newWds.size() > 1 && oldWds.size() < newWds.size()){
         ui->replaceWarningLabel->setText("⚠ Size doesn't match - Too many words to be replaced");
+        oldWord.clear();
+        newWord.clear();
         return;
     }
 
@@ -468,7 +478,7 @@ void MainWindow::onStartButtonClicked(){
     }
 
     if(!replacer){
-        replacer = new ReplaceWord(this);
+        replacer = new ReplaceWord(this, progressWindow);
         QThread *thread{new QThread};
 
         replacer->moveToThread(thread);
