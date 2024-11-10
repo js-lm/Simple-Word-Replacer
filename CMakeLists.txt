@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON) # For the custom editors
 
 set(PROJECT_SOURCES
         main.cpp
@@ -21,10 +21,19 @@ set(PROJECT_SOURCES
         mainwindow.ui
 )
 
+set(app_icon_resource_windows "${CMAKE_CURRENT_SOURCE_DIR}/resources/WordReplacer.rc")
+set(MACOSX_BUNDLE_ICON_FILE WordReplacer.icns)
+set(app_icon_macos "${CMAKE_CURRENT_SOURCE_DIR}/resources/WordReplacer.icns")
+set_source_files_properties(${app_icon_macos} PROPERTIES
+       MACOSX_PACKAGE_LOCATION "Resources")
+
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(WordReplacer
         MANUAL_FINALIZATION
+        MACOSX_BUNDLE
         ${PROJECT_SOURCES}
+        ${app_icon_resource_windows}
+        ${app_icon_macos}
         progressdialog.h progressdialog.cpp progressdialog.ui
         previewdialog.h previewdialog.cpp previewdialog.ui
         replaceword.h replaceword.cpp
