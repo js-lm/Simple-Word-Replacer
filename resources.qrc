@@ -3,5 +3,7 @@
         <file>resources/WordReplacer.svg</file>
         <file>resources/WordReplacer.icns</file>
         <file>resources/WordReplacer.ico</file>
+        <file>resources/open_file.svg</file>
+        <file>resources/open_folder.svg</file>
     </qresource>
 </RCC>

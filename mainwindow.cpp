@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     initTips();
     initConnects();
 
-    this->setWindowTitle("Word Replacer V0 - By:Josh");
+    this->setWindowTitle("Word Replacer V1.0.0 - By:Josh");
 }
 
 MainWindow::~MainWindow(){
@@ -48,6 +48,7 @@ void MainWindow::initWarnings(){
 void MainWindow::initTips(){
     ui->oldWordLabel->setToolTip(
         "Enter the word(s) you want to search for.\n\n"
+
         "You can search for multiple words, separated by your chosen separator.\n"
         "The number and order of the words you're searching for should match\n"
         "the number and order of the words you want to replace, unless you're\n"
@@ -55,26 +56,31 @@ void MainWindow::initTips(){
         );
     ui->newWordLabel->setToolTip(
         "Enter the word(s) you want to replace the search terms with.\n\n"
+
         "You can replace multiple words, separated by your chosen separator.\n"
-        "The number and order of the words you enter should match the number and order of\n"
-        "the words you searched for.\n\n"
+        "The number and order of the words you enter should match the number and\n"
+        "order of the words you searched for.\n\n"
+
         "If you enter only one word, it will replace all search words with that one word.\n"
         "If you leave this field empty, it will remove the words you searched for."
         );
     ui->separatorLabel->setToolTip(
         "You can specify a separator to separate multiple words.\n\n"
-        "If you leave the separator box empty, the entire input will be treated as a single word.\n\n"
-        "Note:\tSpaces are treated as regular words. If you enter a space in either the\n"
-        "\told or new words, it will be replaced or added just like any other word.\n"
-        "\tAvoid spaces between words unless you intend to replace or add them."
+
+        "If you leave the separator box empty, the entire input will be treated as a\nsingle word.\n\n"
+
+        "Spaces are treated as regular words. If you enter a space in either the search\n"
+        "or replacement terms, it will be replaced or added just like any other word.\n"
+        "Avoid spaces between words unless you intend to replace or add them."
         );
     ui->isAddingSuffix->setToolTip(
         "Add suffix after the processed files' names."
         );
     ui->isCreatingBackup->setToolTip(
         "Create a backup folder within the output folder.\n\n"
-        "If you are replacing the original file(s),\n"
-        "the backup folder will be created in the same location as the input folder."
+
+        "If you are replacing the original file(s), the backup folder\n"
+        "will be created in the same location as the input folder."
         );
 }
 

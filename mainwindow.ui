@@ -58,7 +58,7 @@
        <enum>QTabWidget::TabShape::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="iconSize">
        <size>
@@ -77,7 +77,8 @@
       </property>
       <widget class="QWidget" name="selectFile">
        <attribute name="icon">
-        <iconset theme="QIcon::ThemeIcon::DocumentOpen"/>
+        <iconset resource="resources.qrc">
+         <normaloff>:/icon/resources/open_file.svg</normaloff>:/icon/resources/open_file.svg</iconset>
        </attribute>
        <attribute name="title">
         <string>Select File</string>
@@ -124,7 +125,8 @@
       </widget>
       <widget class="QWidget" name="selectFolder">
        <attribute name="icon">
-        <iconset theme="QIcon::ThemeIcon::FolderOpen"/>
+        <iconset resource="resources.qrc">
+         <normaloff>:/icon/resources/open_folder.svg</normaloff>:/icon/resources/open_folder.svg</iconset>
        </attribute>
        <attribute name="title">
         <string>Select Folder</string>
