@@ -393,7 +393,7 @@
          <item>
           <widget class="QCheckBox" name="isReplacingFileName">
            <property name="text">
-            <string>Also Rename File Name(s)</string>
+            <string>Also Rename File(s)</string>
            </property>
           </widget>
          </item>

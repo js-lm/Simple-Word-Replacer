@@ -2,42 +2,48 @@
 
 #include <QDialog>
 #include <QTime>
+#include "mainwindow.h"
 
 namespace Ui{class ProgressDialog;}
+
+class MainWindow;
 
 class ProgressDialog : public QDialog{
     Q_OBJECT
 
 public:
-    explicit ProgressDialog(QWidget *parent = nullptr);
+    explicit ProgressDialog(QWidget *parent = nullptr, MainWindow *mainWindow = nullptr);
     ~ProgressDialog();
 
     void init();
-
-    void updateProgress(qint64 fileSize
+    void updateEstimatedTimeDisplay();
+    void updateProgress(qint64 currentFileSize
                         , qint64 totalFileSize
                         , size_t totalElapsedTime
                         , size_t processedFileNumber
                         , size_t totalFiles
                         );
-
     void updateLogScreen(const QString &message);
-
     void replaceCompleted();
-
-    void updateButtons(bool isFinished);
+    void updateEstimatedTimerPause(bool isPausing);
 
 public:
     bool isCancelled;
 
 private:
     Ui::ProgressDialog *ui;
+    MainWindow *mainWindow;
 
     QTimer *timer;
 
     size_t estimatedTime;
-    qint64 processedSize;
+    qint64 totalProcessedSize;
+
+    bool isPausingEstimatedTimer;
 
 private:
-    void updateEstimatedTimeDisplay();
+    void updateButtons(bool isFinished);
+
+    void closeEvent(QCloseEvent *event) override;
+    void onNextButtonClicked();
 };

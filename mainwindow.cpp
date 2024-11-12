@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , replacer(nullptr)
-    , progressWindow(new ProgressDialog(this))
+    , progressWindow(new ProgressDialog(this, this))
     , previewDialog(new PreviewDialog(this, this))
     , isFile(true)
     , isCaseSensitive(false)
@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     initTips();
     initConnects();
 
-    this->setWindowTitle("Word Replacer V1.0.0 - By:Josh");
+    this->setWindowTitle("Word Replacer v1.0.1");
 }
 
 MainWindow::~MainWindow(){
@@ -81,6 +81,12 @@ void MainWindow::initTips(){
 
         "If you are replacing the original file(s), the backup folder\n"
         "will be created in the same location as the input folder."
+        );
+    ui->separatorWarningLabel->setToolTip(
+        "Separator update failed\n\n"
+
+        "The new separator is already part of the existing character.\n"
+        "Please choose a different separator."
         );
 }
 
@@ -322,11 +328,6 @@ void MainWindow::separatorLineFocusLost(){
     if(oldSep != newSep && (!oldWord.isEmpty())){
         if(ui->oldWordLine->text().contains(newSep) || ui->newWordLine->text().contains(newSep)){
             ui->separatorWarningLabel->setText("⚠ New separator conflicts with existing character. Try another. ⓘ");
-            ui->separatorWarningLabel->setToolTip(
-                "Separator update failed\n\n"
-                "The new separator is already part of the existing character.\n"
-                "Please choose a different separator."
-                );
             ui->separatorLine->setText(oldSep);
             return;
         }
@@ -362,16 +363,6 @@ void MainWindow::onAddSuffixClicked(){
 }
 
 // Output Row //
-void MainWindow::onOpenOutputFolderClicked(){
-    qDebug() << "onOpenOutputFolderClicked() called";
-
-    if(!QDesktopServices::openUrl(QUrl::fromLocalFile(outPath))){
-        qDebug() << "failed to open " << outPath;
-    }else{
-        qDebug() << "opened " << outPath;
-    }
-}
-
 void MainWindow::onCreateBackupClicked(){
     qDebug() << "onCreateBackupClicked() called";
     isCreatingBackup = ui->isCreatingBackup->isChecked();
@@ -433,6 +424,7 @@ void MainWindow::onSelectOutputFolderClicked(){
     }
 
     ui->outFolderWarning->clear();
+    ui->openOutFolderButton->setText("Open Folder");
     ui->openOutFolderButton->setEnabled(true);
     outPath = ui->outPathLine->text();
     qDebug() << "updated outPath to " << outPath;
@@ -458,15 +450,55 @@ void MainWindow::updateOutPath(bool isShowingWarning){
         if(isShowingWarning){
             ui->outFolderWarning->setText("⚠ Folder Does Not Exist");
         }
-        ui->openOutFolderButton->setEnabled(false);
+        ui->openOutFolderButton->setEnabled(true);
+        ui->openOutFolderButton->setText("Create Folder");
         outPath.clear();
         return;
     }
 
     ui->outFolderWarning->clear();
+    ui->openOutFolderButton->setText("Open Folder");
     ui->openOutFolderButton->setEnabled(true);
     outPath = ui->outPathLine->text();
     qDebug() << "updated outPath to " << outPath;
+}
+
+void MainWindow::onOpenOutputFolderClicked(){
+    qDebug() << "onOpenOutputFolderClicked() called";
+    QString path{ui->outPathLine->text()};
+    qDebug() << "Path " << path;
+
+    if(ui->openOutFolderButton->text() == "Create Folder"){
+        if(QDir(path).exists()){
+            ui->outFolderWarning->setText("⚠ Folder Already Exist");
+        }else if(!(path.contains("/") || path.contains("\\"))){
+            ui->outFolderWarning->setText("⚠ Please Enter A Valid Path");
+        }else{
+            if(QDir().mkpath(path)){
+                ui->outFolderWarning->clear();
+                ui->openOutFolderButton->setText("Open Folder");
+                outPath = ui->outPathLine->text();
+                qDebug() << "updated outPath to " << outPath;
+            }else{
+                ui->outFolderWarning->setText("⚠ Unable to Create Folder");
+            }
+        }
+    }else{
+        if(QDir(path).exists()){
+            if(!QDesktopServices::openUrl(QUrl::fromLocalFile(outPath))){
+                qDebug() << "failed to open " << outPath;
+                ui->outFolderWarning->setText("⚠ Unable to Open Folder");
+            }else{
+                qDebug() << "opened " << outPath;
+            }
+        }else{
+            ui->outFolderWarning->setText("⚠ Folder Does Not Exist");
+
+            ui->openOutFolderButton->setEnabled(true);
+            ui->openOutFolderButton->setText("Create Folder");
+            outPath.clear();
+        }
+    }
 }
 
 void MainWindow::suffixLineFocusLost(){
@@ -492,6 +524,7 @@ void MainWindow::onStartButtonClicked(){
         connect(thread, &QThread::started, replacer, &ReplaceWord::start);
         connect(replacer, &ReplaceWord::progress, progressWindow, &ProgressDialog::updateProgress);
         connect(replacer, &ReplaceWord::messager, progressWindow, &ProgressDialog::updateLogScreen);
+        connect(replacer, &ReplaceWord::pauseEstimatedTimer, progressWindow, &ProgressDialog::updateEstimatedTimerPause);
         connect(replacer, &ReplaceWord::finished, this, [this, thread](){
             replacer = nullptr;
 
@@ -504,6 +537,7 @@ void MainWindow::onStartButtonClicked(){
         });
 
         thread->start();
+        hide();
         progressWindow->show();
         progressWindow->init();
     }else{
@@ -516,40 +550,17 @@ void MainWindow::onPreviewButtonClicked(){
 
     if(!checkStartConditions(true)) return;
 
+    hide();
     previewDialog->show();
     previewDialog->init();
     previewDialog->fetchFiles();
 }
 
 bool MainWindow::checkStartConditions(bool isPreviewing){
-    qDebug() << "updateStartButtonStatus() called";
-    qDebug() << "filePath: " << filePath;
-    qDebug() << "folderPath: " << folderPath;
-    qDebug() << "outPath: " << outPath;
-    qDebug() << "isFile: " << isFile;
-    qDebug() << "oldWord: " << oldWord;
-    qDebug() << "newWord: " << newWord;
-    qDebug() << "isCaseSensitive: " << isCaseSensitive;
-    qDebug() << "separator: " << separator;
-    qDebug() << "isReplacingFileName: " << isReplacingFileName;
-    qDebug() << "isAddingSuffix: " << isAddingSuffix;
-    qDebug() << "suffix: " << suffix;
-    qDebug() << "isReplacingOriginalFile: " << isReplacingOriginalFile;
-    qDebug() << "isCreatingBackup: " << isCreatingBackup;
-
     isFile ? updateInFileLine() : updateInFolderLine();
     removeDuplicatedSeparatorFromSearchFor();
     checkReplacementAndUpdateIfValid();
     updateOutPath(true);
-
-    qDebug() << "isFile: " << isFile;
-    qDebug() << "filePath.isEmpty(): " << filePath.isEmpty();
-    qDebug() << "folderPath.isEmpty(): " << folderPath.isEmpty();
-    qDebug() << "isReplacingOriginalFile: " << isReplacingOriginalFile;
-    qDebug() << "isPreviewing: " << isPreviewing;
-    qDebug() << "outPath.isEmpty(): " << outPath.isEmpty();
-    qDebug() << "outPath: " << outPath;
-    qDebug() << "oldWord.isEmpty(): " << oldWord.isEmpty();
 
     if(
         (isFile && filePath.isEmpty()) ||

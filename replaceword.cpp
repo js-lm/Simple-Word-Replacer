@@ -4,6 +4,7 @@
 #include <QMessageBox>
 #include <QString>
 #include <QElapsedTimer>
+#include "confirmbox.h"
 
 ReplaceWord::ReplaceWord(MainWindow *mainWindow, ProgressDialog *progressDialog)
     : mainWindow(mainWindow)
@@ -16,6 +17,12 @@ ReplaceWord::ReplaceWord(MainWindow *mainWindow, ProgressDialog *progressDialog)
     , canCurrentLoopContinue(true)
     , totalReplaceCount(0)
     , isCaseSensitive(mainWindow->isCaseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive)
+    , shouldRemember(false)
+    , shouldAlwaysOverwrite(false)
+    , replacementCancelled(false)
+    , totalTime(0)
+    , totalSize(0)
+    , totalActualNumberOfFileReplaced(0)
 {
     if(mainWindow->newWord.size() > 1){
         newWord += mainWindow->newWord;
@@ -34,7 +41,7 @@ void ReplaceWord::start(){
 
     emit messager("");
 
-    totalTimer.start();
+    //totalTimer.start();
 
     fetchFiles();
     checkOutputDirectory();
@@ -57,7 +64,9 @@ void ReplaceWord::start(){
 
         size_t index{1};
         for(const QString &path : filePaths){
-            if(!canContinue()){
+            if(!canContinue() || replacementCancelled){
+                qDebug() << "canContinue() " << canContinue();
+                qDebug() << "replacementCancelled " << replacementCancelled;
                 progressDialog->isCancelled = false;
                 emit messager("");
                 emit messager(QString("%1>> User Cancelled%2").arg(failure, b));
@@ -70,7 +79,7 @@ void ReplaceWord::start(){
             QString content;
             QFileInfo file{path};
             QString newFileName{file.fileName()};
-            qint64 size{file.size()};
+            qint64 currentFileSize{file.size()};
 
             emit messager("");
             emit messager(QString(">> Processing File[%2] - %1").arg(newFileName, QString::number(index)));
@@ -90,38 +99,50 @@ void ReplaceWord::start(){
                 addSuffix(newFileName);
             }
 
-            writeFile(newFileName, content);
+            // need to calculate the time it takes for the user to decide whether they
+            // want to overwrite the file or not, otherwise, it will mess up the timers
+            quint64 confirmBoxElapsedTime{0};
+            writeFile(newFileName, content, confirmBoxElapsedTime, currentFileSize);
 
-            emit messager(QString("%1* Time elapsed: %2ms").arg(sp, QString::number(timer.elapsed())));
-            emit progress(size, totalSize, totalTimer.elapsed(), index, filePaths.size());
+            qDebug() << "timer.elapsed()" << timer.elapsed();
+            qDebug() << "confirmBoxElapsedTime" << confirmBoxElapsedTime;
+
+            quint64 loopTime{timer.elapsed() - confirmBoxElapsedTime};
+            totalTime += loopTime;
+
+            qDebug() << "loopTime" << loopTime;
+            qDebug() << "totalTime" << totalTime;
+            qDebug() << "currentFileSize" << currentFileSize;
+
+            emit messager(QString("%1* Time elapsed: %2ms").arg(sp, QString::number(loopTime)));
+            emit progress(currentFileSize, totalSize, totalTime, index, filePaths.size());
 
             canCurrentLoopContinue = true;
             index++;
         }
     }
 
-    done(totalTimer.elapsed());
+    done();
     this->deleteLater();
 }
 
-void ReplaceWord::done(size_t elapsedTime){
-    auto totalElapsedTime{elapsedTime};
-
+void ReplaceWord::done(){
     emit messager("");
     emit messager(QString("%1>> Replacement Completed%2").arg(success, b));
+    emit messager(QString(">> Successfully processed %1 / %2 of file(s)").arg(QString::number(totalActualNumberOfFileReplaced), QString::number(filePaths.size())));
     emit messager(QString(">> Replaced total %1 word(s)").arg(QString::number(totalReplaceCount)));
 
-    if(totalElapsedTime < 4000){
-        emit messager(QString(">> Total elasped time: %1ms").arg(QString::number(totalElapsedTime)));
+    if(totalTime < 4000){
+        emit messager(QString(">> Total elasped time: %1ms").arg(QString::number(totalTime)));
     }else{
-        QString hour{QString::number(totalElapsedTime / 3600000).rightJustified(2, '0')};
-        QString minute{QString::number(totalElapsedTime / 60000 % 60).rightJustified(2, '0')};
-        QString second{QString::number(totalElapsedTime / 1000 % 60).rightJustified(2, '0')};
+        QString hour{QString::number(totalTime / 3600000).rightJustified(2, '0')};
+        QString minute{QString::number(totalTime / 60000 % 60).rightJustified(2, '0')};
+        QString second{QString::number(totalTime / 1000 % 60).rightJustified(2, '0')};
 
         emit messager(QString(">> Total elasped time: %1:%2:%3").arg(hour, minute, second));
     }
 
-    emit finished(totalElapsedTime);
+    emit finished(totalTime);
 }
 
 void ReplaceWord::fetchFiles(){
@@ -343,12 +364,62 @@ void ReplaceWord::addSuffix(QString &newFileName){
     emit messager(QString("%1* Added suffix to \"%2\"").arg(sp, newFileName));
 }
 
-void ReplaceWord::writeFile(const QString &newFileName, const QString &content){
+void ReplaceWord::writeFile(const QString &newFileName, const QString &content, quint64 &confirmBoxElapsedTime, qint64 &currentFileSize){
     qDebug() << "writeFile() called";
     if(!canCurrentLoopContinue) return;
 
     QString outPath{QDir(outputDirectory).filePath(newFileName)};
     QFile file{outPath};
+
+    if(file.exists()){
+        if(shouldRemember){
+            if(shouldAlwaysOverwrite){
+                emit messager(QString("%1* File already exist. Overwriting...").arg(sp));
+            }else{
+                emit messager(QString("%1! File already exist. Skipping...").arg(sp));
+
+                // processed file size, since we are skipping the file here, we need to reflect that
+                // I don't really need to use the referece, I can also use file.size() but whatever
+                totalSize -= currentFileSize;
+                currentFileSize = 0;
+                return;
+            }
+        }else{
+            ConfirmBox confirmBox(this, newFileName);
+
+            emit pauseEstimatedTimer(true);
+            QElapsedTimer confirmBoxTimer;
+            confirmBoxTimer.start();
+
+            if(confirmBox.exec() == QDialog::Accepted){
+                if(confirmBox.shouldRemember){
+                    shouldRemember = true;
+                    shouldAlwaysOverwrite = true;
+                }
+                emit messager(QString("%1* File already exist. Overwriting...").arg(sp));
+            }else{
+                if(confirmBox.isCancelled){
+                    replacementCancelled = true;
+                }else{
+                    if(confirmBox.shouldRemember){
+                        shouldRemember = true;
+                        shouldAlwaysOverwrite = false;
+                    }
+                    // same as above
+                    totalSize -= currentFileSize;
+                    currentFileSize = 0;
+                    emit messager(QString("%1! File already exist. Skipping...").arg(sp));
+                    return;
+                }
+            }
+
+            confirmBoxElapsedTime = confirmBoxTimer.elapsed();
+            qDebug() << "confirmBoxTimer.elapsed(); " << confirmBoxTimer.elapsed();
+            emit pauseEstimatedTimer(false);
+        }
+    }
+
+    qDebug() << "proceeding to write file";
 
     if(file.open(QIODevice::WriteOnly | QIODevice::Text)){
         QTextStream out(&file);
@@ -356,6 +427,7 @@ void ReplaceWord::writeFile(const QString &newFileName, const QString &content){
         file.close();
 
         emit messager(QString("%1* Successfully wrote the file").arg(sp));
+        totalActualNumberOfFileReplaced++;
     }else{
         emit messager(QString("%1%2* Unable to write the file%3").arg(sp, failure, b));
 

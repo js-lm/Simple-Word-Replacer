@@ -5,14 +5,15 @@
 #include <QStringList>
 #include <QString>
 #include <QElapsedTimer>
+#include <qwidget.h>
 
 namespace Ui{class ReplaceWord;}
 
 class MainWindow;
-
 class ProgressDialog;
+class ConfirmBox;
 
-class ReplaceWord : public QObject{
+class ReplaceWord : public QWidget{
     Q_OBJECT
 
 public:
@@ -31,11 +32,11 @@ private:
     void replaceWord(QString &content);
     void replaceFileName(QString &newFileName);
     void addSuffix(QString &newFileName);
-    void writeFile(const QString &newFileName, const QString &content);
+    void writeFile(const QString &newFileName, const QString &content, quint64 &confirmBoxElapsedTime, qint64 &currentFileSize);
 
     bool canContinue();
 
-    void done(size_t elapsedTime);
+    void done();
 
 private:
     MainWindow *mainWindow;
@@ -51,6 +52,7 @@ private:
     bool isFile;
     Qt::CaseSensitivity isCaseSensitive;
     bool canCurrentLoopContinue;
+    bool replacementCancelled;
 
     QStringList filePaths;
     const QStringList &oldWord;
@@ -59,11 +61,16 @@ private:
     QString backupDestination;
 
     size_t totalReplaceCount;
-    QElapsedTimer totalTimer;
+    size_t totalActualNumberOfFileReplaced;
+    quint64 totalTime;
     qint64 totalSize;
+
+    bool shouldRemember;
+    bool shouldAlwaysOverwrite;
 
 signals:
     void messager(const QString &message);
     void progress(qint64 fileSize, qint64 totalFileSize, size_t totalElapsedTime, size_t processedFileNumber, size_t totalFiles);
     void finished(size_t totalElapsedTime);
+    void pauseEstimatedTimer(bool isPausing);
 };

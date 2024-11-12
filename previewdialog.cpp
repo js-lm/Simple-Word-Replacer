@@ -35,13 +35,6 @@ PreviewDialog::~PreviewDialog(){
 void PreviewDialog::init(){
     qDebug() << "init() called";
 
-    qDebug() << "isAddingSuffix: " << mainWindow->isAddingSuffix;
-    qDebug() << "isCaseSensitive: " << mainWindow->isCaseSensitive;
-    qDebug() << "isReplacingFileName: " << mainWindow->isReplacingFileName;
-    qDebug() << "suffix: " << mainWindow->suffix;
-    qDebug() << "newWord: " << mainWindow->newWord.join(mainWindow->separator);
-    qDebug() << "oldWord: " << mainWindow->oldWord.join(mainWindow->separator);
-
     ui->isAddingSuffix->setChecked(mainWindow->isAddingSuffix);
     ui->isCaseSensitive->setChecked(mainWindow->isCaseSensitive);
     ui->isReplacingFileName->setChecked(mainWindow->isReplacingFileName);
@@ -72,7 +65,13 @@ void PreviewDialog::fetchFiles(){
 
 void PreviewDialog::onBackButtonClicked(){
     qDebug() << "onBackButtonClicked() called";
-    this->hide();
+    mainWindow->show();
+    hide();
+}
+
+void PreviewDialog::closeEvent(QCloseEvent *event){
+    qDebug() << "closeEvent() called";
+    mainWindow->show();
 }
 
 void PreviewDialog::onFileListDoubleClicked(QListWidgetItem *selection){
@@ -80,6 +79,7 @@ void PreviewDialog::onFileListDoubleClicked(QListWidgetItem *selection){
 
     currentSelection = selection->text();
     updatePreview();
+    ui->previewWindow->verticalScrollBar()->setValue(0);
 }
 
 void PreviewDialog::onShowOriginalClicked(){
@@ -114,6 +114,7 @@ void PreviewDialog::onSelectButtonClicked(){
     if(currentItem){
         currentSelection = currentItem->text();
         updatePreview();
+        ui->previewWindow->verticalScrollBar()->setValue(0);
     }
 }
 

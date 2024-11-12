@@ -20,12 +20,16 @@ public:
     void fetchFiles();
     void updatePreview();
 
+private:
+
     void onBackButtonClicked();
     void onFileListDoubleClicked(QListWidgetItem *selection);
     void onShowOriginalClicked();
     void onHighlightClicked();
     void onShowingDeletedWordClicked();
     void onSelectButtonClicked();
+
+    void closeEvent(QCloseEvent *event) override;
 
 private:
     Ui::PreviewDialog *ui;
