@@ -23,6 +23,8 @@ ReplaceWord::ReplaceWord(MainWindow *mainWindow, ProgressDialog *progressDialog)
     , totalTime(0)
     , totalSize(0)
     , totalActualNumberOfFileReplaced(0)
+    , totalSkipped(0)
+    , totalFailed(0)
 {
     if(mainWindow->newWord.size() > 1){
         newWord += mainWindow->newWord;
@@ -39,9 +41,8 @@ ReplaceWord::ReplaceWord(MainWindow *mainWindow, ProgressDialog *progressDialog)
 void ReplaceWord::start(){
     qDebug() << "start() called";
 
-    emit messager("");
-
-    //totalTimer.start();
+    emit messager("Simple Word Replacer");
+    emit messager(QString("Version: %1").arg(APP_VERSION));
 
     fetchFiles();
     checkOutputDirectory();
@@ -122,24 +123,28 @@ void ReplaceWord::start(){
         }
     }
 
-    done();
+    if(canContinue() && !replacementCancelled){
+        done();
+    }
     this->deleteLater();
 }
 
 void ReplaceWord::done(){
     emit messager("");
     emit messager(QString("%1>> Replacement Completed%2").arg(success, b));
-    emit messager(QString(">> Successfully processed %1 / %2 of file(s)").arg(QString::number(totalActualNumberOfFileReplaced), QString::number(filePaths.size())));
+    emit messager(QString(">> Successfully processed %1 file%2").arg(QString::number(totalActualNumberOfFileReplaced), totalActualNumberOfFileReplaced < 2 ? "" : "s"));
+    emit messager(QString(">> %1 file%2 failed to process").arg(QString::number(totalFailed), totalFailed < 2 ? "" : "s"));
+    emit messager(QString(">> %1 file%2 have been skipped").arg(QString::number(totalSkipped), totalSkipped < 2 ? "" : "s"));
     emit messager(QString(">> Replaced total %1 word(s)").arg(QString::number(totalReplaceCount)));
 
     if(totalTime < 4000){
-        emit messager(QString(">> Total elasped time: %1ms").arg(QString::number(totalTime)));
+        emit messager(QString(">> Total elapsed time: %1ms").arg(QString::number(totalTime)));
     }else{
         QString hour{QString::number(totalTime / 3600000).rightJustified(2, '0')};
         QString minute{QString::number(totalTime / 60000 % 60).rightJustified(2, '0')};
         QString second{QString::number(totalTime / 1000 % 60).rightJustified(2, '0')};
 
-        emit messager(QString(">> Total elasped time: %1:%2:%3").arg(hour, minute, second));
+        emit messager(QString(">> Total elapsed time: %1:%2:%3").arg(hour, minute, second));
     }
 
     emit finished(totalTime);
@@ -173,6 +178,7 @@ void ReplaceWord::fetchFiles(){
         for(const QFileInfo &file : QDir(mainWindow->folderPath).entryInfoList(QDir::Files | QDir::NoDotAndDotDot)){
             addFile(file.absoluteFilePath());
         }
+        emit messager(QString(">> Total File(s): %1").arg(filePaths.size()));
     }
 
     if(filePaths.isEmpty()){
@@ -275,7 +281,7 @@ void ReplaceWord::createBackupFolder(){
 
 void ReplaceWord::readFile(const QString &path, QString &content){
     qDebug() << "readFile() called";
-    if(!canCurrentLoopContinue || !canContinue()) return;
+    if(!checkContinueCondition()) return;
 
     QFile file{path};
 
@@ -294,7 +300,7 @@ void ReplaceWord::readFile(const QString &path, QString &content){
 
 void ReplaceWord::createBackup(const QString &path, const QString &newFileName){
     qDebug() << "createBackup() called";
-    if(!canCurrentLoopContinue || !canContinue()) return;
+    if(!checkContinueCondition()) return;
 
     QString destination{QDir(backupDestination).filePath(newFileName)};
 
@@ -315,7 +321,7 @@ void ReplaceWord::createBackup(const QString &path, const QString &newFileName){
 
 void ReplaceWord::replaceWord(QString &content){
     qDebug() << "replaceWord() called";
-    if(!canCurrentLoopContinue || !canContinue()) return;
+    if(!checkContinueCondition()) return;
 
     size_t replaceCount{0};
 
@@ -341,7 +347,7 @@ void ReplaceWord::replaceWord(QString &content){
 
 void ReplaceWord::replaceFileName(QString &newFileName){
     qDebug() << "replaceFileName() called";
-    if(!canCurrentLoopContinue || !canContinue()) return;
+    if(!checkContinueCondition()) return;
 
     for(size_t i{0}; i < oldWord.size(); i++){
         newFileName.replace(oldWord[i], newWord[i], isCaseSensitive);
@@ -351,7 +357,7 @@ void ReplaceWord::replaceFileName(QString &newFileName){
 
 void ReplaceWord::addSuffix(QString &newFileName){
     qDebug() << "addSuffix() called";
-    if(!canCurrentLoopContinue || !canContinue()) return;
+    if(!checkContinueCondition()) return;
 
     auto dotIndex{newFileName.lastIndexOf('.')};
 
@@ -366,7 +372,10 @@ void ReplaceWord::addSuffix(QString &newFileName){
 
 void ReplaceWord::writeFile(const QString &newFileName, const QString &content, quint64 &confirmBoxElapsedTime, qint64 &currentFileSize){
     qDebug() << "writeFile() called";
-    if(!canCurrentLoopContinue) return;
+    if(!checkContinueCondition()){
+        totalFailed++;
+        return;
+    }
 
     QString outPath{QDir(outputDirectory).filePath(newFileName)};
     QFile file{outPath};
@@ -377,11 +386,13 @@ void ReplaceWord::writeFile(const QString &newFileName, const QString &content, 
                 emit messager(QString("%1* File already exist. Overwriting...").arg(sp));
             }else{
                 emit messager(QString("%1! File already exist. Skipping...").arg(sp));
+                emit messager(QString("%1%1┕> %2").arg(sp, outPath));
 
                 // processed file size, since we are skipping the file here, we need to reflect that
                 // I don't really need to use the referece, I can also use file.size() but whatever
                 totalSize -= currentFileSize;
                 currentFileSize = 0;
+                totalSkipped++;
                 return;
             }
         }else{
@@ -409,8 +420,10 @@ void ReplaceWord::writeFile(const QString &newFileName, const QString &content, 
                     totalSize -= currentFileSize;
                     currentFileSize = 0;
                     emit messager(QString("%1! File already exist. Skipping...").arg(sp));
-                    return;
+                    emit messager(QString("%1%1┕> %2").arg(sp, outPath));
+                    totalSkipped++;
                 }
+                return;
             }
 
             confirmBoxElapsedTime = confirmBoxTimer.elapsed();
@@ -427,9 +440,11 @@ void ReplaceWord::writeFile(const QString &newFileName, const QString &content, 
         file.close();
 
         emit messager(QString("%1* Successfully wrote the file").arg(sp));
+        emit messager(QString("%1%1┕> %2").arg(sp, outPath));
         totalActualNumberOfFileReplaced++;
     }else{
         emit messager(QString("%1%2* Unable to write the file%3").arg(sp, failure, b));
+        emit messager(QString("%1%1┕> %2").arg(sp, outPath));
 
         canCurrentLoopContinue = false;
     }
@@ -440,4 +455,11 @@ bool ReplaceWord::canContinue(){
         return false;
     }
     return true;
+}
+
+bool ReplaceWord::checkContinueCondition(){
+    if(canCurrentLoopContinue && canContinue()){
+        return true;
+    }
+    return false;
 }

@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(WordReplacer VERSION 0.1 LANGUAGES CXX)
+project(WordReplacer VERSION 1.0.1 LANGUAGES CXX)
+
+add_definitions(
+    -DAPP_VERSION="${PROJECT_VERSION}"
+)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)

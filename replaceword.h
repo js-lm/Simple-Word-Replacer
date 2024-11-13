@@ -35,6 +35,7 @@ private:
     void writeFile(const QString &newFileName, const QString &content, quint64 &confirmBoxElapsedTime, qint64 &currentFileSize);
 
     bool canContinue();
+    bool checkContinueCondition();
 
     void done();
 
@@ -60,10 +61,13 @@ private:
     QString outputDirectory;
     QString backupDestination;
 
-    size_t totalReplaceCount;
-    size_t totalActualNumberOfFileReplaced;
     quint64 totalTime;
     qint64 totalSize;
+
+    size_t totalReplaceCount;
+    size_t totalActualNumberOfFileReplaced;
+    size_t totalSkipped;
+    size_t totalFailed;
 
     bool shouldRemember;
     bool shouldAlwaysOverwrite;

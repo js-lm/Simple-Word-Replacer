@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     initTips();
     initConnects();
 
-    this->setWindowTitle("Word Replacer v1.0.1");
+    this->setWindowTitle(QString("Simple Word Replacer v%1").arg(APP_VERSION));
 }
 
 MainWindow::~MainWindow(){
