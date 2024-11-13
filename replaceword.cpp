@@ -123,9 +123,7 @@ void ReplaceWord::start(){
         }
     }
 
-    if(canContinue() && !replacementCancelled){
-        done();
-    }
+    done();
     this->deleteLater();
 }
 

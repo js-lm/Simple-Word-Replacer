@@ -13,8 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , replacer(nullptr)
-    , progressWindow(new ProgressDialog(this, this))
-    , previewDialog(new PreviewDialog(this, this))
+    , progressWindow(new ProgressDialog(this))
+    , previewDialog(new PreviewDialog(this))
     , isFile(true)
     , isCaseSensitive(false)
     , separator(",")
@@ -515,7 +515,7 @@ void MainWindow::onStartButtonClicked(){
         return;
     }
 
-    if(!replacer){
+    if(!replacer){ // I don't want to create new instance of Replacer
         replacer = new ReplaceWord(this, progressWindow);
         QThread *thread{new QThread};
 
@@ -541,6 +541,12 @@ void MainWindow::onStartButtonClicked(){
         progressWindow->show();
         progressWindow->init();
     }else{
+        // I don't think this will ever happen but...
+        QMessageBox::warning(this,
+                             "Application Restart Required",
+                             "An unexpected issue has occurred. "
+                             "An instance of ReplaceWord is still running. "
+                             "Please restart the application to resolve the issue.");
         qDebug() << "replacer is not pointing to nullptr";
     }
 }

@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>FIle(s) Processing</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/icon/resources/WordReplacer.svg</normaloff>:/icon/resources/WordReplacer.svg</iconset>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
     <number>5</number>
@@ -143,6 +147,8 @@
   <tabstop>nextButton</tabstop>
   <tabstop>cancelButton</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

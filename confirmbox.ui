@@ -82,9 +82,9 @@
    <item>
     <layout class="QHBoxLayout" name="layout">
      <item>
-      <widget class="QCheckBox" name="rememberMyChoice">
+      <widget class="QPushButton" name="cancelButton">
        <property name="text">
-        <string>Remember My Choice</string>
+        <string>Cancel The Replacement</string>
        </property>
       </widget>
      </item>
@@ -102,9 +102,9 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="cancelButton">
+      <widget class="QCheckBox" name="rememberMyChoice">
        <property name="text">
-        <string>Cancel The Replacement</string>
+        <string>Remember My Choice</string>
        </property>
       </widget>
      </item>
@@ -143,10 +143,10 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>rememberMyChoice</tabstop>
   <tabstop>replaceButton</tabstop>
   <tabstop>skipButton</tabstop>
   <tabstop>cancelButton</tabstop>
+  <tabstop>rememberMyChoice</tabstop>
  </tabstops>
  <resources>
   <include location="resources.qrc"/>

@@ -12,7 +12,7 @@ class ProgressDialog : public QDialog{
     Q_OBJECT
 
 public:
-    explicit ProgressDialog(QWidget *parent = nullptr, MainWindow *mainWindow = nullptr);
+    explicit ProgressDialog(MainWindow *mainWindow = nullptr);
     ~ProgressDialog();
 
     void init();

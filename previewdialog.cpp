@@ -8,9 +8,8 @@
 #include <QScrollBar>
 #include <QMessageBox>
 
-PreviewDialog::PreviewDialog(QWidget *parent, MainWindow *mainWinow)
-    : QDialog(parent)
-    , ui(new Ui::PreviewDialog)
+PreviewDialog::PreviewDialog(MainWindow *mainWinow)
+    : ui(new Ui::PreviewDialog)
     , mainWindow(mainWinow)
 {
     ui->setupUi(this);

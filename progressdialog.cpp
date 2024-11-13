@@ -2,9 +2,8 @@
 #include "ui_progressdialog.h"
 #include <QTimer>
 
-ProgressDialog::ProgressDialog(QWidget *parent, MainWindow *mainWindow)
-    : QDialog(parent)
-    , ui(new Ui::ProgressDialog)
+ProgressDialog::ProgressDialog(MainWindow *mainWindow)
+    : ui(new Ui::ProgressDialog)
     , isCancelled(false)
     , timer(new QTimer(this))
     , mainWindow(mainWindow)
@@ -75,12 +74,12 @@ void ProgressDialog::updateEstimatedTimeDisplay(){
 void ProgressDialog::updateProgress(qint64 currentFileSize
                                     , qint64 totalFileSize
                                     , size_t totalElapsedTime
-                                    , size_t processedFileNumber
+                                    , size_t currentFileIndex
                                     , size_t totalFiles
                                 ){
     qDebug() << "updateProgress() called";
-    ui->completedCountLabel->setText(QString::number(processedFileNumber) + " / " + QString::number(totalFiles) + " Completed");
-    ui->progressBar->setValue(100 * processedFileNumber / totalFiles);
+    ui->completedCountLabel->setText(QString::number(currentFileIndex) + " / " + QString::number(totalFiles) + " Completed");
+    ui->progressBar->setValue(100 * currentFileIndex / totalFiles);
 
     totalProcessedSize += currentFileSize;
     estimatedTime = (double)totalElapsedTime / totalProcessedSize * (totalFileSize - totalProcessedSize);
@@ -90,7 +89,9 @@ void ProgressDialog::updateProgress(qint64 currentFileSize
     qDebug() << "totalFileSize: " << totalFileSize;
     qDebug() << "estimatedTime: " << estimatedTime;
 
-    updateEstimatedTimeDisplay();
+    if(totalProcessedSize > 0){
+        updateEstimatedTimeDisplay();
+    }
 }
 
 void ProgressDialog::updateLogScreen(const QString &message){

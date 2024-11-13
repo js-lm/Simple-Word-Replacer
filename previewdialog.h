@@ -13,7 +13,7 @@ class PreviewDialog : public QDialog{
     Q_OBJECT
 
 public:
-    explicit PreviewDialog(QWidget *parent = nullptr, MainWindow *mainWinow = nullptr);
+    explicit PreviewDialog(MainWindow *mainWinow = nullptr);
     ~PreviewDialog();
 
     void init();
